@@ -34,6 +34,9 @@ app.post("/api/checkout", (req, res) => {
             message: "Transaction processed successfully"
         });
     } catch (error) {
+        // Log error to Vercel console
+        console.error("[ERROR LOG] " + new Date().toISOString() + " : " + error.message);
+        
         return res.status(500).json({ 
             success: false, 
             message: error.message 
