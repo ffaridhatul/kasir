@@ -121,25 +121,20 @@ app.delete("/api/menu/:id", async (req, res) => {
     }
 });
 
-// Fetch transactions by date
+// Fetch transactions by date range
 app.get("/api/transactions", async (req, res) => {
     try {
-        const dateStr = req.query.date;
-        if (!dateStr) {
-            return res.status(400).json({ success: false, message: "Date is required" });
+        const { start, end } = req.query;
+        
+        if (!start || !end) {
+            return res.status(400).json({ success: false, message: "Start and end dates are required" });
         }
-
-        // Create start and end bounds for the selected date
-        const startDate = new Date(dateStr);
-        startDate.setHours(0, 0, 0, 0);
-        const endDate = new Date(dateStr);
-        endDate.setHours(23, 59, 59, 999);
 
         const { data, error } = await supabase
             .from('transactions')
             .select('*')
-            .gte('created_datetime', startDate.toISOString())
-            .lte('created_datetime', endDate.toISOString())
+            .gte('created_datetime', start)
+            .lte('created_datetime', end)
             .order('created_datetime', { ascending: false });
 
         if (error) throw error;

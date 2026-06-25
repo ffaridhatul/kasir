@@ -357,6 +357,7 @@ const closeTxBtn = document.getElementById('close-tx-btn');
 const txDateInput = document.getElementById('tx-date');
 const txList = document.getElementById('tx-list');
 const txEmpty = document.getElementById('tx-empty');
+const txDailyTotal = document.getElementById('tx-daily-total');
 
 // ---- Transaction History ----
 function openTxModal() {
@@ -364,10 +365,13 @@ function openTxModal() {
     txOverlay.classList.add('visible');
     document.body.style.overflow = 'hidden';
     
-    // Set default date to today if empty
+    // Set default date to today based on local timezone
     if (!txDateInput.value) {
-        const today = new Date().toISOString().split('T')[0];
-        txDateInput.value = today;
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        txDateInput.value = `${year}-${month}-${day}`;
     }
     fetchTransactions(txDateInput.value);
 }
@@ -380,8 +384,15 @@ function closeTxModal() {
 
 async function fetchTransactions(dateStr) {
     try {
-        // Fetch transactions from backend
-        const response = await fetch(`${API_TX_URL}?date=${dateStr}`);
+        // Parse the local date string (YYYY-MM-DD)
+        const [y, m, d] = dateStr.split('-');
+        
+        // Create exact local start and end times, then convert to ISO for backend
+        const startDate = new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
+        const endDate = new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
+
+        // Send date bounds directly to avoid Vercel server timezone shift
+        const response = await fetch(`${API_TX_URL}?start=${startDate}&end=${endDate}`);
         const result = await response.json();
 
         if (!result.success) throw new Error(result.message);
@@ -397,12 +408,17 @@ function renderTransactions(transactions) {
     
     if (!transactions || transactions.length === 0) {
         txEmpty.style.display = 'flex';
+        if (txDailyTotal) txDailyTotal.textContent = 'Rp 0';
         return;
     }
     
     txEmpty.style.display = 'none';
 
+    let dailyTotal = 0; // Variable to calculate total sales
+
     transactions.forEach(tx => {
+        dailyTotal += tx.total_price; // Accumulate total
+
         const li = document.createElement('li');
         li.className = 'tx-item';
         
@@ -435,6 +451,11 @@ function renderTransactions(transactions) {
         `;
         txList.appendChild(li);
     });
+
+    // Display formatted total sales
+    if (txDailyTotal) {
+        txDailyTotal.textContent = `Rp ${dailyTotal.toLocaleString('id-ID')}`;
+    }
 }
 
 // Event Listeners for Transaction Modal
