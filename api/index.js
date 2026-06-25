@@ -34,7 +34,7 @@ app.post("/api/checkout", async (req, res) => {
                 { 
                     items: items, 
                     total_price: total_price, 
-                    payment_amount: payment_amount, 
+                    amount_paid: payment_amount, // Mapped to DB column amount_paid
                     change_amount: change_amount 
                 }
             ]);
