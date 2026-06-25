@@ -1,10 +1,10 @@
 // Inisialisasi Supabase (Gunakan anon key publik Anda)
 const supabaseUrl = 'https://elcadzmmchsntsvxiszb.supabase.co';
-const supabaseKey = 'sb_publishable_L4Pvc1F_U2AuaMszD2cceQ_ll_dkDLs'; 
+const supabaseKey = 'sb_publishable_L4Pvc1F_U2AuaMszD2cceQ_ll_dkDLs';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Hapus const menuItems yang lama
-let menuItems = []; 
+let menuItems = [];
 
 // Fungsi baru untuk ambil menu dari database
 async function fetchMenu() {
@@ -18,7 +18,7 @@ async function fetchMenu() {
         alert("Gagal memuat menu dari database.");
         return;
     }
-    
+
     menuItems = data;
     renderMenu(); // Jalankan render setelah data didapat
 }
@@ -37,33 +37,19 @@ const paymentInput = document.getElementById("payment-amount");
 const changeAmountEl = document.getElementById("change-amount");
 const processBtn = document.getElementById("process-btn");
 
-// Display menu items to the grid
-function renderMenu() {
-    menuContainer.innerHTML = "";
-    menuItems.forEach(item => {
-        const itemEl = document.createElement("div");
-        itemEl.className = "menu-item";
-        itemEl.innerHTML = `
-            <h3>${item.name}</h3>
-            <p class="price">Rp ${item.price.toLocaleString('id-ID')}</p>
-        `;
-        itemEl.addEventListener("click", () => addToCart(item));
-        menuContainer.appendChild(itemEl);
-    });
-}
 
 function renderMenu() {
     menuContainer.innerHTML = "";
-    
+
     // Kelompokkan berdasarkan kategori (opsional tapi disarankan)
     const categories = [...new Set(menuItems.map(item => item.category))];
-    
+
     categories.forEach(cat => {
         const catTitle = document.createElement("h3");
         catTitle.textContent = cat;
         catTitle.style.width = "100%";
         menuContainer.appendChild(catTitle);
-        
+
         menuItems.filter(i => i.category === cat).forEach(item => {
             const itemEl = document.createElement("div");
             itemEl.className = "menu-item";
@@ -75,6 +61,17 @@ function renderMenu() {
             menuContainer.appendChild(itemEl);
         });
     });
+}
+
+// Tambahkan fungsi addToCart agar tidak error saat menu diklik
+function addToCart(item) {
+    const existing = cart.find(i => i.id === item.id);
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        cart.push({ ...item, quantity: 1 });
+    }
+    renderCart();
 }
 
 // Update cart display and calculations
@@ -104,7 +101,7 @@ function renderCart() {
 }
 
 // Adjust item quantity in cart
-window.changeQuantity = function(id, delta) {
+window.changeQuantity = function (id, delta) {
     const item = cart.find(cartItem => cartItem.id === id);
     if (item) {
         item.quantity += delta;
