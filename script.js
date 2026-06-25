@@ -9,7 +9,7 @@ const menuItems = [
 ];
 
 // Configuration for Vercel backend URL
-const BACKEND_URL = "https://kebab-chicken-larva-backend.vercel.app/api/checkout";
+const BACKEND_URL = "chasierkebabckl.vercel.app/api/checkout";
 
 let cart = [];
 
