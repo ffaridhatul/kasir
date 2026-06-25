@@ -1,13 +1,30 @@
-// Mock menu data for Kebab Chicken Larva
-const menuItems = [
-    { id: 1, name: "Kebab Chicken Larva S", price: 11000 },
-    { id: 2, name: "Kebab Chicken Larva M", price: 14000 },
-    { id: 3, name: "Kebab Chicken Larva L", price: 17000 },
-    { id: 4, name: "Kebab Banner Cheese", price: 16000 },
-    { id: 5, name: "Burger Chicken Larva", price: 13000 },
-    { id: 6, name: "Sosis Bakar Larva", price: 10000 }
-];
+// Inisialisasi Supabase (Gunakan anon key publik Anda)
+const supabaseUrl = 'https://elcadzmmchsntsvxiszb.supabase.co';
+const supabaseKey = 'sb_publishable_L4Pvc1F_U2AuaMszD2cceQ_ll_dkDLs'; 
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+// Hapus const menuItems yang lama
+let menuItems = []; 
+
+// Fungsi baru untuk ambil menu dari database
+async function fetchMenu() {
+    const { data, error } = await supabase
+        .from('menu')
+        .select('*')
+        .order('category', { ascending: true }); // Mengurutkan berdasarkan kategori
+
+    if (error) {
+        console.error("Gagal mengambil menu:", error);
+        alert("Gagal memuat menu dari database.");
+        return;
+    }
+    
+    menuItems = data;
+    renderMenu(); // Jalankan render setelah data didapat
+}
+
+// Panggil fetchMenu saat aplikasi pertama kali dimuat
+fetchMenu();
 // Configuration for Vercel backend URL
 const BACKEND_URL = "https://chasierkebabckl.vercel.app/api/checkout";
 
@@ -35,15 +52,29 @@ function renderMenu() {
     });
 }
 
-// Add item to shopping cart
-function addToCart(item) {
-    const existingItem = cart.find(cartItem => cartItem.id === item.id);
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({ ...item, quantity: 1 });
-    }
-    renderCart();
+function renderMenu() {
+    menuContainer.innerHTML = "";
+    
+    // Kelompokkan berdasarkan kategori (opsional tapi disarankan)
+    const categories = [...new Set(menuItems.map(item => item.category))];
+    
+    categories.forEach(cat => {
+        const catTitle = document.createElement("h3");
+        catTitle.textContent = cat;
+        catTitle.style.width = "100%";
+        menuContainer.appendChild(catTitle);
+        
+        menuItems.filter(i => i.category === cat).forEach(item => {
+            const itemEl = document.createElement("div");
+            itemEl.className = "menu-item";
+            itemEl.innerHTML = `
+                <h4>${item.name}</h4>
+                <p class="price">Rp ${item.price.toLocaleString('id-ID')}</p>
+            `;
+            itemEl.addEventListener("click", () => addToCart(item));
+            menuContainer.appendChild(itemEl);
+        });
+    });
 }
 
 // Update cart display and calculations
