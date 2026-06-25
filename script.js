@@ -1,4 +1,4 @@
-// Inisialisasi Supabase (Gunakan anon key publik Anda)
+
 const supabaseUrl = 'https://elcadzmmchsntsvxiszb.supabase.co';
 const supabaseKey = 'sb_publishable_L4Pvc1F_U2AuaMszD2cceQ_ll_dkDLs';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
