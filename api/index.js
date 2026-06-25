@@ -66,7 +66,6 @@ app.post("/api/checkout", async (req, res) => {
     }
 });
 
-
 // Fetch all menus
 app.get("/api/menu", async (req, res) => {
     try {
@@ -117,6 +116,34 @@ app.delete("/api/menu/:id", async (req, res) => {
         
         if (error) throw error;
         return res.status(200).json({ success: true, message: "Menu deleted successfully" });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Fetch transactions by date
+app.get("/api/transactions", async (req, res) => {
+    try {
+        const dateStr = req.query.date;
+        if (!dateStr) {
+            return res.status(400).json({ success: false, message: "Date is required" });
+        }
+
+        // Create start and end bounds for the selected date
+        const startDate = new Date(dateStr);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(dateStr);
+        endDate.setHours(23, 59, 59, 999);
+
+        const { data, error } = await supabase
+            .from('transactions')
+            .select('*')
+            .gte('created_datetime', startDate.toISOString())
+            .lte('created_datetime', endDate.toISOString())
+            .order('created_datetime', { ascending: false });
+
+        if (error) throw error;
+        return res.status(200).json({ success: true, data });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
