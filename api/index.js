@@ -57,10 +57,11 @@ app.post("/api/checkout", async (req, res) => {
     } catch (error) {
         // Log error to Vercel console
         console.error("[ERROR LOG] " + new Date().toISOString() + " : " + error.message);
+        console.error("DEBUG ERROR DETAIL:", JSON.stringify(error, null, 2));
         
         return res.status(500).json({ 
             success: false, 
-            message: error.message 
+            message: error.message || "Unknown Database Error"
         });
     }
 });
