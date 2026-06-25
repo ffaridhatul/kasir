@@ -138,16 +138,14 @@ function renderMenu() {
 
         catItems.forEach(item => {
             const el = document.createElement('div');
-            el.className = 'menu-item';
-
-            // Check if item already in cart
             const inCart = cart.find(c => c.id === item.id);
+            el.className = 'menu-item' + (inCart ? ' selected' : '');
 
             el.innerHTML = `
                 <div class="menu-item-emoji">${getEmoji(item)}</div>
                 <h4>${item.name}</h4>
                 <p class="price">Rp ${item.price.toLocaleString('id-ID')}</p>
-                <span class="add-hint">${inCart ? `+${inCart.quantity} di keranjang` : 'Ketuk untuk tambah'}</span>
+                <span class="add-hint">${inCart ? `x${inCart.quantity} di keranjang` : 'Ketuk untuk tambah'}</span>
             `;
             el.addEventListener('click', () => addToCart(item));
             menuContainer.appendChild(el);

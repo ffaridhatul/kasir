@@ -817,6 +817,26 @@ body {
     z-index: 105;
 }
 
+/* style.css */
+
+/* Highlight saat item dipilih */
+.menu-item.selected {
+    border-color: var(--red);
+    background: #fff5f5; /* Sedikit warna merah muda lembut */
+    box-shadow: 0 4px 12px rgba(230, 57, 70, 0.15);
+}
+
+/* Mempercantik hint qty */
+.menu-item.selected .add-hint {
+    color: var(--red);
+    font-weight: 700;
+}
+
+/* Efek sedikit bergetar saat diklik (opsional) */
+.menu-item:active {
+    transform: scale(0.98);
+}
+
 /* ============================================
    RESPONSIVE — TABLET (≤ 900px)
    ============================================ */
