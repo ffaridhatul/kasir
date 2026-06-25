@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir - Kebab Chicken Larva</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kedai Kebab Chicken Larva</h1>
+        </header>
+
+        <main class="pos-layout">
+            <!-- Menu Catalog -->
+            <section class="menu-section">
+                <h2>Menu</h2>
+                <div id="menu-container" class="menu-grid">
+                    <!-- Menu items will be injected here -->
+                </div>
+            </section>
+
+            <!-- Order Cart and Payment -->
+            <section class="cart-section">
+                <h2>Pesanan Saat Ini</h2>
+                <ul id="cart-list"></ul>
+
+                <div class="summary">
+                    <div class="summary-row">
+                        <span>Total:</span>
+                        <span id="total-price">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <label for="payment-amount">Uang Diterima:</label>
+                        <input type="number" id="payment-amount" min="0" placeholder="0">
+                    </div>
+                    <div class="summary-row">
+                        <span>Kembalian:</span>
+                        <span id="change-amount">Rp 0</span>
+                    </div>
+                </div>
+
+                <button id="process-btn" disabled>Proses Pesanan</button>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
