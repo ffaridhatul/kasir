@@ -1,14 +1,14 @@
 
 const supabaseUrl = 'https://elcadzmmchsntsvxiszb.supabase.co';
 const supabaseKey = 'sb_publishable_L4Pvc1F_U2AuaMszD2cceQ_ll_dkDLs';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const client = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Hapus const menuItems yang lama
 let menuItems = [];
 
 // Fungsi baru untuk ambil menu dari database
 async function fetchMenu() {
-    const { data, error } = await supabase
+    const { data, error } = await client
         .from('menu')
         .select('*')
         .order('category', { ascending: true }); // Mengurutkan berdasarkan kategori
