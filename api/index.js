@@ -66,5 +66,61 @@ app.post("/api/checkout", async (req, res) => {
     }
 });
 
+
+// Fetch all menus
+app.get("/api/menu", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('menu')
+            .select('*')
+            .order('category', { ascending: true });
+
+        if (error) throw error;
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Add new menu
+app.post("/api/menu", async (req, res) => {
+    try {
+        const payload = req.body;
+        const { error } = await supabase.from('menu').insert([payload]);
+        
+        if (error) throw error;
+        return res.status(200).json({ success: true, message: "Menu added successfully" });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update menu
+app.put("/api/menu/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const payload = req.body;
+        const { error } = await supabase.from('menu').update(payload).eq('id', id);
+        
+        if (error) throw error;
+        return res.status(200).json({ success: true, message: "Menu updated successfully" });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Delete menu
+app.delete("/api/menu/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { error } = await supabase.from('menu').delete().eq('id', id);
+        
+        if (error) throw error;
+        return res.status(200).json({ success: true, message: "Menu deleted successfully" });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // Export app for Vercel
 module.exports = app;

@@ -1,0 +1,70 @@
+@import "style.css";
+
+/* ---- Admin Specific Style ---- */
+.brand-icon svg {
+    color: var(--white);
+}
+
+.btn-back-pos {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-dk);
+    color: var(--white) !important;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background var(--transition);
+}
+
+.btn-back-pos:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+/* ---- Responsive Table & Form ---- */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.admin-table th {
+    padding: 12px 10px;
+    border-bottom: 2px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.admin-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+/* ---- Media Query Mobile ---- */
+@media (max-width: 768px) {
+    .pos-wrapper {
+        padding: 75px 12px 20px !important;
+    }
+
+    #admin-menu-form {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px;
+    }
+
+    #admin-menu-form div {
+        width: 100% !important;
+    }
+
+    #admin-menu-form button {
+        width: 100% !important;
+        margin-top: 4px;
+    }
+
+    .admin-table th, 
+    .admin-table td {
+        padding: 8px 6px;
+        font-size: 0.82rem;
+    }
+}

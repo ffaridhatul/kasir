@@ -2,11 +2,10 @@
    Kebab Chicken Lava — POS Script
    ============================================ */
 
-const supabaseUrl = 'https://elcadzmmchsntsvxiszb.supabase.co';
-const supabaseKey = 'sb_publishable_L4Pvc1F_U2AuaMszD2cceQ_ll_dkDLs';
-const client = supabase.createClient(supabaseUrl, supabaseKey);
-
+// Replace Supabase config with backend API URLs
 const BACKEND_URL = "https://chasierkebabckl.vercel.app/api/checkout";
+const API_MENU_URL = "https://chasierkebabckl.vercel.app/api/menu";
+const API_TX_URL = "https://chasierkebabckl.vercel.app/api/transactions";
 
 // ---- State ----
 let menuItems   = [];
@@ -61,13 +60,12 @@ const toast         = document.getElementById('toast');
 // ---- Fetch Menu ----
 async function fetchMenu() {
     try {
-        const { data, error } = await client
-            .from('menu')
-            .select('*')
-            .order('category', { ascending: true });
-
-        if (error) throw error;
-        menuItems = data;
+        const response = await fetch(API_MENU_URL);
+        const result = await response.json();
+        
+        if (!result.success) throw new Error(result.message);
+        
+        menuItems = result.data;
         buildCategoryTabs();
         renderMenu();
     } catch (err) {
@@ -350,6 +348,100 @@ spinStyle.textContent = `
 .spin { animation: spin 0.8s linear infinite; }
 `;
 document.head.appendChild(spinStyle);
+
+// ---- DOM refs (Additional) ----
+const btnTransactions = document.getElementById('btn-transactions');
+const txModal = document.getElementById('tx-modal');
+const txOverlay = document.getElementById('tx-overlay');
+const closeTxBtn = document.getElementById('close-tx-btn');
+const txDateInput = document.getElementById('tx-date');
+const txList = document.getElementById('tx-list');
+const txEmpty = document.getElementById('tx-empty');
+
+// ---- Transaction History ----
+function openTxModal() {
+    txModal.classList.add('open');
+    txOverlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    
+    // Set default date to today if empty
+    if (!txDateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        txDateInput.value = today;
+    }
+    fetchTransactions(txDateInput.value);
+}
+
+function closeTxModal() {
+    txModal.classList.remove('open');
+    txOverlay.classList.remove('visible');
+    document.body.style.overflow = '';
+}
+
+async function fetchTransactions(dateStr) {
+    try {
+        // Fetch transactions from backend
+        const response = await fetch(`${API_TX_URL}?date=${dateStr}`);
+        const result = await response.json();
+
+        if (!result.success) throw new Error(result.message);
+        renderTransactions(result.data);
+    } catch (err) {
+        console.error('Error fetching transactions:', err);
+        showToast('Gagal memuat riwayat transaksi', true);
+    }
+}
+
+function renderTransactions(transactions) {
+    txList.innerHTML = '';
+    
+    if (!transactions || transactions.length === 0) {
+        txEmpty.style.display = 'flex';
+        return;
+    }
+    
+    txEmpty.style.display = 'none';
+
+    transactions.forEach(tx => {
+        const li = document.createElement('li');
+        li.className = 'tx-item';
+        
+        const dateObj = new Date(tx.created_datetime);
+        const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        
+        // Parse items if it's stringified JSON, otherwise use as is
+        let items = tx.items;
+        if (typeof items === 'string') {
+            try { items = JSON.parse(items); } catch(e) {}
+        }
+
+        let itemsHtml = '';
+        if (Array.isArray(items)) {
+            itemsHtml = items.map(item => `${item.quantity}x ${item.name}`).join('<br>');
+        }
+
+        li.innerHTML = `
+            <div class="tx-item-header">
+                <span>ID: #${tx.id}</span>
+                <span>${timeStr}</span>
+            </div>
+            <div class="tx-item-details">
+                ${itemsHtml}
+            </div>
+            <div class="tx-item-summary">
+                <span>Total</span>
+                <span>Rp ${tx.total_price.toLocaleString('id-ID')}</span>
+            </div>
+        `;
+        txList.appendChild(li);
+    });
+}
+
+// Event Listeners for Transaction Modal
+btnTransactions.addEventListener('click', openTxModal);
+closeTxBtn.addEventListener('click', closeTxModal);
+txOverlay.addEventListener('click', closeTxModal);
+txDateInput.addEventListener('change', (e) => fetchTransactions(e.target.value));
 
 // ---- Init ----
 fetchMenu();

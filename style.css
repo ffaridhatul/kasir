@@ -708,6 +708,116 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
 
 /* ============================================
+   TRANSACTION MODAL
+   ============================================ */
+.tx-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 110;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.tx-modal.open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+}
+
+.tx-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tx-header h2 {
+    font-size: 1.1rem;
+    color: var(--text);
+}
+
+.tx-filters {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tx-filters input[type="date"] {
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 0.9rem;
+    color: var(--text);
+    outline: none;
+}
+
+.tx-filters input[type="date"]:focus {
+    border-color: var(--red);
+}
+
+.tx-body {
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.tx-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tx-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tx-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.tx-item-details {
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.tx-item-summary {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    color: var(--red);
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+}
+
+#tx-overlay {
+    z-index: 105;
+}
+
+/* ============================================
    RESPONSIVE — TABLET (≤ 900px)
    ============================================ */
 @media (max-width: 900px) {
