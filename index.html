@@ -3,49 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir - Kebab Chicken Larva</title>
+    <title>Kasir — Kebab Chicken Lava</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Kedai Kebab Chicken Lava</h1>
-        </header>
 
-        <main class="pos-layout">
-            <!-- Menu Catalog -->
-            <section class="menu-section">
-                <h2>Menu</h2>
-                <div id="menu-container" class="menu-grid">
-                    <!-- Menu items will be injected here -->
+    <!-- TOP NAVBAR -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <span class="brand-icon">🌯</span>
+                <div>
+                    <span class="brand-name">Kebab Chicken Lava</span>
+                    <span class="brand-sub">Point of Sale</span>
                 </div>
-            </section>
+            </div>
+            <div class="topbar-right">
+                <div class="clock" id="clock">--:--</div>
+                <!-- Mobile: Cart button -->
+                <button class="cart-toggle-btn" id="cart-toggle-btn" aria-label="Lihat Keranjang">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6h13"/>
+                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                    </svg>
+                    <span class="cart-badge" id="cart-badge">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
 
-            <!-- Order Cart and Payment -->
-            <section class="cart-section">
-                <h2>Pesanan Saat Ini</h2>
-                <ul id="cart-list"></ul>
+    <!-- OVERLAY for mobile drawer -->
+    <div class="overlay" id="overlay"></div>
 
-                <div class="summary">
-                    <div class="summary-row">
-                        <span>Total:</span>
-                        <span id="total-price">Rp 0</span>
-                    </div>
-                    <div class="summary-row">
-                        <label for="payment-amount">Uang Diterima:</label>
-                        <input type="number" id="payment-amount" min="0" placeholder="0">
-                    </div>
-                    <div class="summary-row">
-                        <span>Kembalian:</span>
-                        <span id="change-amount">Rp 0</span>
-                    </div>
-                </div>
+    <!-- MAIN LAYOUT -->
+    <div class="pos-wrapper">
 
-                <button id="process-btn" disabled>Proses Pesanan</button>
-            </section>
+        <!-- LEFT: MENU SECTION -->
+        <main class="menu-section">
+            <div class="search-bar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" id="search-input" placeholder="Cari menu...">
+            </div>
+
+            <div class="category-tabs" id="category-tabs">
+                <button class="tab active" data-cat="all">Semua</button>
+                <!-- tabs injected by JS -->
+            </div>
+
+            <div id="menu-container" class="menu-grid">
+                <!-- Loading skeleton -->
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+            </div>
         </main>
+
+        <!-- RIGHT: CART SECTION (drawer on mobile) -->
+        <aside class="cart-panel" id="cart-panel">
+            <div class="cart-header">
+                <h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6h13"/><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg>
+                    Pesanan
+                </h2>
+                <button class="close-cart-btn" id="close-cart-btn" aria-label="Tutup">✕</button>
+            </div>
+
+            <!-- Empty state -->
+            <div class="cart-empty" id="cart-empty">
+                <div class="empty-icon">🛒</div>
+                <p>Belum ada pesanan</p>
+                <small>Klik menu untuk menambahkan</small>
+            </div>
+
+            <ul id="cart-list"></ul>
+
+            <div class="cart-footer">
+                <div class="summary-card">
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal</span>
+                        <span id="item-count" class="summary-value-small">0 item</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-row total-row">
+                        <span>Total</span>
+                        <span id="total-price" class="total-value">Rp 0</span>
+                    </div>
+                    <div class="payment-field">
+                        <label for="payment-amount">Uang Diterima</label>
+                        <div class="input-prefix">
+                            <span>Rp</span>
+                            <input type="number" id="payment-amount" min="0" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="summary-row change-row" id="change-row">
+                        <span>Kembalian</span>
+                        <span id="change-amount" class="change-value">Rp 0</span>
+                    </div>
+                </div>
+
+                <button id="process-btn" class="process-btn" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Proses Pesanan
+                </button>
+            </div>
+        </aside>
     </div>
+
+    <!-- SUCCESS TOAST -->
+    <div class="toast" id="toast">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Transaksi berhasil diproses!
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
