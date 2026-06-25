@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+// Initialize Supabase client
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 
@@ -7,8 +9,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Set Supabase credentials from environment variables
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 // Checkout endpoint
-app.post("/api/checkout", (req, res) => {
+app.post("/api/checkout", async (req, res) => {
     try {
         const { items, total_price, payment_amount, change_amount } = req.body;
 
@@ -20,8 +27,22 @@ app.post("/api/checkout", (req, res) => {
             });
         }
 
+        // Insert transaction data to Supabase
+        const { data, error } = await supabase
+            .from('transactions')
+            .insert([
+                { 
+                    items: items, 
+                    total_price: total_price, 
+                    payment_amount: payment_amount, 
+                    change_amount: change_amount 
+                }
+            ]);
+
+        if (error) throw error;
+
         // Process data log (visible in Vercel dashboard)
-        console.log("New Order Received:", {
+        console.log("New Order Received and Saved:", {
             total_price,
             payment_amount,
             change_amount,
@@ -31,7 +52,7 @@ app.post("/api/checkout", (req, res) => {
         // Send back success response
         return res.status(200).json({
             success: true,
-            message: "Transaction processed successfully"
+            message: "Transaction processed and saved successfully"
         });
     } catch (error) {
         // Log error to Vercel console
