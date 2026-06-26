@@ -368,6 +368,34 @@ const txDateInput = document.getElementById('tx-date');
 const txList = document.getElementById('tx-list');
 const txEmpty = document.getElementById('tx-empty');
 const txDailyTotal = document.getElementById('tx-daily-total');
+const btnLogout = document.getElementById('btn-logout');
+
+// ---- Hamburger Menu Toggle ----
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const navMenu = document.getElementById('nav-menu');
+
+if (hamburgerBtn && navMenu) {
+    // Toggle menu
+    hamburgerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navMenu.classList.toggle('open');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!hamburgerBtn.contains(e.target) && !navMenu.contains(e.target)) {
+            navMenu.classList.remove('open');
+        }
+    });
+}
+
+// Handle logout action
+if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+        localStorage.removeItem('kebab_user_session');
+        window.location.href = 'login.html';
+    });
+}
 
 // ---- Transaction History ----
 function openTxModal() {

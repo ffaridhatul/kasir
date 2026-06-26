@@ -838,6 +838,69 @@ body {
 }
 
 /* ============================================
+   NAVIGATION & HAMBURGER MENU
+   ============================================ */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#hamburger-btn {
+    display: none; /* Hide on desktop by default */
+}
+
+/* ============================================
+   RESPONSIVE — TABLET (≤ 900px)
+   ============================================ */
+@media (max-width: 900px) {
+    #hamburger-btn {
+        display: flex;
+    }
+
+    .nav-menu {
+        position: absolute;
+        top: calc(var(--topbar-h) + 10px);
+        right: 20px;
+        background: var(--dark-navy);
+        flex-direction: column;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-dk);
+        gap: 12px;
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+        pointer-events: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 200;
+        transform-origin: top right;
+    }
+
+    .nav-menu.open {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .nav-menu .cart-toggle-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+    }
+}
+
+/* ============================================
+   RESPONSIVE — MOBILE (≤ 640px)
+   ============================================ */
+@media (max-width: 640px) {
+    .nav-menu {
+        right: 14px;
+        top: calc(var(--topbar-h) + 8px);
+    }
+}
+
+/* ============================================
    RESPONSIVE — TABLET (≤ 900px)
    ============================================ */
 @media (max-width: 900px) {

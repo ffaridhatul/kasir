@@ -32,7 +32,7 @@ async function fetchAdminMenu() {
     try {
         const response = await fetch(API_MENU_URL);
         const result = await response.json();
-        
+
         if (!result.success) throw new Error(result.message);
         renderAdminMenu(result.data);
     } catch (err) {
@@ -77,7 +77,7 @@ menuForm.addEventListener('submit', async (e) => {
             });
             const result = await response.json();
             if (!result.success) throw new Error(result.message);
-            
+
             showToast('Menu updated successfully');
         } else {
             // Add new menu
@@ -88,7 +88,7 @@ menuForm.addEventListener('submit', async (e) => {
             });
             const result = await response.json();
             if (!result.success) throw new Error(result.message);
-            
+
             showToast('Menu added successfully');
         }
         resetForm();
@@ -99,7 +99,7 @@ menuForm.addEventListener('submit', async (e) => {
     }
 });
 
-window.editMenu = function(id, category, name, price) {
+window.editMenu = function (id, category, name, price) {
     inputId.value = id;
     inputCategory.value = category;
     inputName.value = name;
@@ -107,7 +107,7 @@ window.editMenu = function(id, category, name, price) {
     btnCancel.style.display = 'block';
 };
 
-window.deleteMenu = async function(id) {
+window.deleteMenu = async function (id) {
     if (!confirm('Are you sure you want to delete this menu?')) return;
     try {
         const response = await fetch(`${API_MENU_URL}/${id}`, {
@@ -115,7 +115,7 @@ window.deleteMenu = async function(id) {
         });
         const result = await response.json();
         if (!result.success) throw new Error(result.message);
-        
+
         showToast('Menu deleted successfully');
         fetchAdminMenu();
     } catch (err) {
@@ -133,6 +133,16 @@ function resetForm() {
 }
 
 btnCancel.addEventListener('click', resetForm);
+btnCancel.addEventListener('click', resetForm);
+
+// Handle admin logout action
+const btnLogoutAdmin = document.getElementById('btn-logout-admin');
+if (btnLogoutAdmin) {
+    btnLogoutAdmin.addEventListener('click', () => {
+        localStorage.removeItem('kebab_user_session');
+        window.location.href = 'login.html';
+    });
+}
 
 // Init
 fetchAdminMenu();
