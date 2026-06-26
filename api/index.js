@@ -21,9 +21,9 @@ app.post("/api/checkout", async (req, res) => {
 
         // Simple validation
         if (!items || items.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Cart is empty" 
+            return res.status(400).json({
+                success: false,
+                message: "Cart is empty"
             });
         }
 
@@ -31,11 +31,11 @@ app.post("/api/checkout", async (req, res) => {
         const { data, error } = await supabase
             .from('transactions')
             .insert([
-                { 
-                    items: items, 
-                    total_price: total_price, 
+                {
+                    items: items,
+                    total_price: total_price,
                     amount_paid: payment_amount, // Mapped to DB column amount_paid
-                    change_amount: change_amount 
+                    change_amount: change_amount
                 }
             ]);
 
@@ -58,9 +58,9 @@ app.post("/api/checkout", async (req, res) => {
         // Log error to Vercel console
         console.error("[ERROR LOG] " + new Date().toISOString() + " : " + error.message);
         console.error("DEBUG ERROR DETAIL:", JSON.stringify(error, null, 2));
-        
-        return res.status(500).json({ 
-            success: false, 
+
+        return res.status(500).json({
+            success: false,
             message: error.message || "Unknown Database Error"
         });
     }
@@ -86,7 +86,7 @@ app.post("/api/menu", async (req, res) => {
     try {
         const payload = req.body;
         const { error } = await supabase.from('menu').insert([payload]);
-        
+
         if (error) throw error;
         return res.status(200).json({ success: true, message: "Menu added successfully" });
     } catch (error) {
@@ -100,7 +100,7 @@ app.put("/api/menu/:id", async (req, res) => {
         const id = req.params.id;
         const payload = req.body;
         const { error } = await supabase.from('menu').update(payload).eq('id', id);
-        
+
         if (error) throw error;
         return res.status(200).json({ success: true, message: "Menu updated successfully" });
     } catch (error) {
@@ -113,7 +113,7 @@ app.delete("/api/menu/:id", async (req, res) => {
     try {
         const id = req.params.id;
         const { error } = await supabase.from('menu').delete().eq('id', id);
-        
+
         if (error) throw error;
         return res.status(200).json({ success: true, message: "Menu deleted successfully" });
     } catch (error) {
@@ -125,7 +125,7 @@ app.delete("/api/menu/:id", async (req, res) => {
 app.get("/api/transactions", async (req, res) => {
     try {
         const { start, end } = req.query;
-        
+
         if (!start || !end) {
             return res.status(400).json({ success: false, message: "Start and end dates are required" });
         }
@@ -139,6 +139,45 @@ app.get("/api/transactions", async (req, res) => {
 
         if (error) throw error;
         return res.status(200).json({ success: true, data });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// --- New Login Endpoint ---
+app.post("/api/login", async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ success: false, message: "Username and password required" });
+        }
+
+        const { data, error } = await supabase
+            .from('users')
+            .select('id, username, role_type, password')
+            .eq('username', username)
+            .single();
+
+        if (error || !data) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+
+        // Compare password directly (consider using bcrypt for production)
+        if (data.password !== password) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+
+        // Remove password from response
+        delete data.password;
+
+        return res.status(200).json({
+            success: true,
+            message: "Login successful",
+            data: data
+        });
+
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
