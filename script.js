@@ -2,14 +2,20 @@
    Kebab Chicken Lava — POS Script
    ============================================ */
 
+// Check user session
+const userSession = JSON.parse(localStorage.getItem('kebab_user_session'));
+if (!userSession) {
+    window.location.href = 'login.html';
+}
+
 // Replace Supabase config with backend API URLs
 const BACKEND_URL = "https://chasierkebabckl.vercel.app/api/checkout";
 const API_MENU_URL = "https://chasierkebabckl.vercel.app/api/menu";
 const API_TX_URL = "https://chasierkebabckl.vercel.app/api/transactions";
 
 // ---- State ----
-let menuItems   = [];
-let cart        = [];
+let menuItems = [];
+let cart = [];
 let activeCategory = 'all';
 let searchQuery = '';
 
@@ -41,30 +47,36 @@ setInterval(updateClock, 1000 * 10);
 
 // ---- DOM refs ----
 const menuContainer = document.getElementById('menu-container');
-const cartList      = document.getElementById('cart-list');
-const cartEmpty     = document.getElementById('cart-empty');
-const totalPriceEl  = document.getElementById('total-price');
-const itemCountEl   = document.getElementById('item-count');
-const paymentInput  = document.getElementById('payment-amount');
+const cartList = document.getElementById('cart-list');
+const cartEmpty = document.getElementById('cart-empty');
+const totalPriceEl = document.getElementById('total-price');
+const itemCountEl = document.getElementById('item-count');
+const paymentInput = document.getElementById('payment-amount');
 const changeAmountEl = document.getElementById('change-amount');
-const processBtn    = document.getElementById('process-btn');
-const cartBadge     = document.getElementById('cart-badge');
-const categoryTabs  = document.getElementById('category-tabs');
-const searchInput   = document.getElementById('search-input');
-const cartPanel     = document.getElementById('cart-panel');
-const overlay       = document.getElementById('overlay');
+const processBtn = document.getElementById('process-btn');
+const cartBadge = document.getElementById('cart-badge');
+const categoryTabs = document.getElementById('category-tabs');
+const searchInput = document.getElementById('search-input');
+const cartPanel = document.getElementById('cart-panel');
+const overlay = document.getElementById('overlay');
 const cartToggleBtn = document.getElementById('cart-toggle-btn');
-const closeCartBtn  = document.getElementById('close-cart-btn');
-const toast         = document.getElementById('toast');
+const closeCartBtn = document.getElementById('close-cart-btn');
+const toast = document.getElementById('toast');
+const adminLinkBtn = document.querySelector('a[href="admin.html"]');
+
+
+if (userSession.role_type === 'kasir' && adminLinkBtn) {
+    adminLinkBtn.style.display = 'none';
+}
 
 // ---- Fetch Menu ----
 async function fetchMenu() {
     try {
         const response = await fetch(API_MENU_URL);
         const result = await response.json();
-        
+
         if (!result.success) throw new Error(result.message);
-        
+
         menuItems = result.data;
         buildCategoryTabs();
         renderMenu();
@@ -103,7 +115,7 @@ function renderMenu() {
     const query = searchQuery.trim().toLowerCase();
 
     let filtered = menuItems.filter(item => {
-        const matchCat  = activeCategory === 'all' || item.category === activeCategory;
+        const matchCat = activeCategory === 'all' || item.category === activeCategory;
         const matchSearch = !query || item.name.toLowerCase().includes(query);
         return matchCat && matchSearch;
     });
@@ -166,7 +178,7 @@ function addToCart(item) {
     renderMenu(); // refresh "di keranjang" hint
 }
 
-window.changeQuantity = function(id, delta) {
+window.changeQuantity = function (id, delta) {
     const item = cart.find(c => c.id === id);
     if (!item) return;
     item.quantity += delta;
@@ -220,16 +232,16 @@ function renderCart() {
         cartList.appendChild(li);
     });
 
-    totalPriceEl.textContent  = `Rp ${total.toLocaleString('id-ID')}`;
-    itemCountEl.textContent   = `${totalItems} item`;
+    totalPriceEl.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+    itemCountEl.textContent = `${totalItems} item`;
     calculateChange();
 }
 
 // ---- Change Calculation ----
 function calculateChange() {
-    const total   = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const payment = parseFloat(paymentInput.value) || 0;
-    const change  = payment - total;
+    const change = payment - total;
 
     if (total > 0 && payment >= total) {
         changeAmountEl.textContent = `Rp ${change.toLocaleString('id-ID')}`;
@@ -251,9 +263,9 @@ paymentInput.addEventListener('input', calculateChange);
 
 // ---- Process Order ----
 async function processOrder() {
-    const total   = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const payment = parseFloat(paymentInput.value) || 0;
-    const change  = payment - total;
+    const change = payment - total;
 
     const orderData = {
         items: cart,
@@ -362,7 +374,7 @@ function openTxModal() {
     txModal.classList.add('open');
     txOverlay.classList.add('visible');
     document.body.style.overflow = 'hidden';
-    
+
     // Set default date to today based on local timezone
     if (!txDateInput.value) {
         const now = new Date();
@@ -384,7 +396,7 @@ async function fetchTransactions(dateStr) {
     try {
         // Parse the local date string (YYYY-MM-DD)
         const [y, m, d] = dateStr.split('-');
-        
+
         // Create exact local start and end times, then convert to ISO for backend
         const startDate = new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
         const endDate = new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
@@ -403,13 +415,13 @@ async function fetchTransactions(dateStr) {
 
 function renderTransactions(transactions) {
     txList.innerHTML = '';
-    
+
     if (!transactions || transactions.length === 0) {
         txEmpty.style.display = 'flex';
         if (txDailyTotal) txDailyTotal.textContent = 'Rp 0';
         return;
     }
-    
+
     txEmpty.style.display = 'none';
 
     let dailyTotal = 0; // Variable to calculate total sales
@@ -419,14 +431,14 @@ function renderTransactions(transactions) {
 
         const li = document.createElement('li');
         li.className = 'tx-item';
-        
+
         const dateObj = new Date(tx.created_datetime);
         const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        
+
         // Parse items if it's stringified JSON, otherwise use as is
         let items = tx.items;
         if (typeof items === 'string') {
-            try { items = JSON.parse(items); } catch(e) {}
+            try { items = JSON.parse(items); } catch (e) { }
         }
 
         let itemsHtml = '';

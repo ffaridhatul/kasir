@@ -1,3 +1,12 @@
+// Check user session and role authorization
+const userSession = JSON.parse(localStorage.getItem('kebab_user_session'));
+if (!userSession) {
+    window.location.href = 'login.html';
+} else if (userSession.role_type === 'kasir') {
+    alert('Anda tidak memiliki akses ke halaman ini!');
+    window.location.href = 'index.html';
+}
+
 const API_MENU_URL = "https://chasierkebabckl.vercel.app/api/menu";
 
 const menuForm = document.getElementById('admin-menu-form');

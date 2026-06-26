@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Kebab Chicken Lava</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--surface);">
+
+    <div style="background: var(--white); padding: 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 100%; max-width: 400px; margin: 20px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span class="brand-icon" style="font-size: 2.5rem; display: block; margin-bottom: 10px;">🌯</span>
+            <h2 style="color: var(--text); font-weight: 700; font-family: var(--font);">Login POS</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font);">Kebab Chicken Lava</p>
+        </div>
+
+        <form id="login-form" style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px; font-family: var(--font);">Username</label>
+                <input type="text" id="username" required style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none; font-family: var(--font);">
+            </div>
+            <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px; font-family: var(--font);">Password</label>
+                <input type="password" id="password" required style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none; font-family: var(--font);">
+            </div>
+            <button type="submit" class="process-btn" id="login-btn" style="margin-top: 10px;">Masuk</button>
+        </form>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="login.js"></script>
+</body>
+
+</html>
