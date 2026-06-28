@@ -65,9 +65,9 @@ const toast = document.getElementById('toast');
 const adminLinkBtn = document.querySelector('a[href="admin.html"]');
 
 
-if (userSession.role_type === 'kasir' && adminLinkBtn) {
-    adminLinkBtn.style.display = 'none';
-}
+// if (userSession.role_type === 'kasir' && adminLinkBtn) {
+//     adminLinkBtn.style.display = 'none';
+// }
 
 // ---- Fetch Menu ----
 async function fetchMenu() {

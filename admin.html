@@ -4,10 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin — Kebab Chicken Lava</title>
+    <title>Admin & Kelola Pesanan — Kebab Chicken Lava</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="admin.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -28,71 +27,149 @@
                     </svg>
                 </span>
                 <div>
-                    <span class="brand-name">Admin Panel</span>
+                    <span class="brand-name">Panel Pengelolaan</span>
                     <span class="brand-sub">Kebab Chicken Lava</span>
                 </div>
             </div>
             <div class="topbar-right">
-                <a href="index.html" class="btn-back-pos"
-                    style="display:flex; text-decoration:none; align-items:center; gap: 6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to POS
-                </a>
             </div>
         </div>
     </header>
 
-    <div class="pos-wrapper" style="padding: 80px 20px 20px; flex-direction: column; gap: 20px;">
+    <div class="admin-container">
+        
+        <aside class="admin-sidebar">
+            <nav class="sidebar-nav">
+                <button class="nav-item" data-target="modul-kasir">Kembali ke POS</button>
+                <button class="nav-item active" data-target="modul-menu">Kelola Menu</button>
+                <button class="nav-item" data-target="modul-users">Kelola Users</button>
+                <button class="nav-item" data-target="modul-transactions">Kelola Transaksi</button>
+                <button class="nav-item" data-target="modul-expenses">Kelola Pengeluaran</button>
+                <button class="nav-item" data-target="modul-reports">Generate Report</button>
+            </nav>
+        </aside>
 
-        <div
-            style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border);">
-            <h3 style="margin-bottom: 15px;">Kelola Menu</h3>
-            <form id="admin-menu-form" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
-                <input type="hidden" id="admin-id">
-                <div style="flex: 1; min-width: 120px;">
-                    <label
-                        style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Kategori</label>
-                    <input type="text" id="admin-category" placeholder="Contoh: Kebab" required
-                        style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+        <main class="admin-content">
+            
+            <section id="modul-menu" class="modul-section active">
+                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px;">Kelola Menu</h3>
+                    <form id="admin-menu-form" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                        <input type="hidden" id="admin-id">
+                        <div style="flex: 1; min-width: 120px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Kategori</label>
+                            <input type="text" id="admin-category" placeholder="Contoh: Kebab" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                        </div>
+                        <div style="flex: 2; min-width: 150px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nama Menu</label>
+                            <input type="text" id="admin-name" placeholder="Nama produk" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                        </div>
+                        <div style="flex: 1; min-width: 100px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Harga (Rp)</label>
+                            <input type="number" id="admin-price" placeholder="15000" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                        </div>
+                        <button type="submit" class="process-btn" id="admin-save-btn" style="width: auto; padding: 9px 16px;">Simpan</button>
+                        <button type="button" class="process-btn" id="admin-cancel-btn" style="width: auto; padding: 9px 16px; background: var(--text-light); box-shadow: none; display: none;">Batal</button>
+                    </form>
                 </div>
-                <div style="flex: 2; min-width: 150px;">
-                    <label
-                        style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nama
-                        Menu</label>
-                    <input type="text" id="admin-name" placeholder="Nama produk" required
-                        style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
-                </div>
-                <div style="flex: 1; min-width: 100px;">
-                    <label
-                        style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Harga
-                        (Rp)</label>
-                    <input type="number" id="admin-price" placeholder="15000" required
-                        style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
-                </div>
-                <button type="submit" class="process-btn" id="admin-save-btn"
-                    style="width: auto; padding: 9px 16px;">Simpan</button>
-                <button type="button" class="process-btn" id="admin-cancel-btn"
-                    style="width: auto; padding: 9px 16px; background: var(--text-light); box-shadow: none; display: none;">Batal</button>
-            </form>
-        </div>
 
-        <div
-            style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-                <thead>
-                    <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted);">
-                        <th style="padding: 10px;">Kategori</th>
-                        <th style="padding: 10px;">Nama Menu</th>
-                        <th style="padding: 10px;">Harga</th>
-                        <th style="padding: 10px; text-align: center;">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-menu-list"></tbody>
-            </table>
-        </div>
+                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Kategori</th>
+                                <th>Nama Menu</th>
+                                <th>Harga</th>
+                                <th style="text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-menu-list"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="modul-users" class="modul-section">
+                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px;">Tambah User Baru</h3>
+                    <form id="admin-user-form" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex: 2; min-width: 150px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Username</label>
+                            <input type="text" id="admin-user-name" placeholder="Username login" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                        </div>
+                        <div style="flex: 2; min-width: 150px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Password</label>
+                            <input type="password" id="admin-user-password" placeholder="Password login" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                        </div>
+                        <div style="flex: 1; min-width: 120px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Role</label>
+                            <select id="admin-user-role" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                                <option value="kasir">Kasir</option>
+                                <option value="admin" id="option-admin-role">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="process-btn" id="admin-user-save-btn" style="width: auto; padding: 9px 16px;">Simpan</button>
+                    </form>
+                </div>
+
+                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th style="text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-user-list"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="modul-transactions" class="modul-section">
+                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h3 style="margin-bottom: 4px;">Kelola Transaksi & Pesanan</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Pantau dan selesaikan pesanan masuk.</p>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted); margin-right: 8px;">Filter Tanggal:</label>
+                        <input type="date" id="admin-tx-date" style="padding: 8px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                    </div>
+                </div>
+
+                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID & Waktu</th>
+                                <th>Pelanggan / Catatan</th>
+                                <th>Pesanan</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th style="text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-tx-list"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="modul-expenses" class="modul-section">
+                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border);">
+                    <h3>Kelola Pengeluaran</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.9rem;">Fitur pencatatan biaya operasional dan pengeluaran toko.</p>
+                </div>
+            </section>
+
+            <section id="modul-reports" class="modul-section">
+                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border);">
+                    <h3>Generate Report</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.9rem;">Fitur kalkulasi keuntungan bersih dan cetak laporan berkala.</p>
+                </div>
+            </section>
+
+        </main>
     </div>
 
     <div class="toast" id="toast"></div>
