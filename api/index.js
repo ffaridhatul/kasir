@@ -7,7 +7,9 @@ const app = express();
 
 // Enable CORS for frontend access
 app.use(cors());
-app.use(express.json());
+// Tingkatkan limit untuk mengakomodasi payload Base64 gambar (misal: 5MB)
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 // Set Supabase credentials from environment variables
 const supabaseUrl = process.env.SUPABASE_URL;

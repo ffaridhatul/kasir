@@ -153,11 +153,18 @@ function renderMenu() {
             const inCart = cart.find(c => c.id === item.id);
             el.className = 'menu-item' + (inCart ? ' selected' : '');
 
+            // Logika render: Jika ada image_url tampilkan gambar, jika tidak fallback ke Emoji
+            const mediaElement = item.image_url 
+                ? `<div class="menu-item-image-wrapper"><img src="${item.image_url}" alt="${item.name}" class="menu-item-image" loading="lazy"></div>`
+                : `<div class="menu-item-emoji-wrapper"><div class="menu-item-emoji">${getEmoji(item)}</div></div>`;
+
             el.innerHTML = `
-                <div class="menu-item-emoji">${getEmoji(item)}</div>
-                <h4>${item.name}</h4>
-                <p class="price">Rp ${item.price.toLocaleString('id-ID')}</p>
-                <span class="add-hint">${inCart ? `x${inCart.quantity} di keranjang` : 'Ketuk untuk tambah'}</span>
+                ${mediaElement}
+                <div class="menu-item-content">
+                    <h4>${item.name}</h4>
+                    <p class="price">Rp ${item.price.toLocaleString('id-ID')}</p>
+                    <span class="add-hint">${inCart ? `x${inCart.quantity} di keranjang` : 'Ketuk untuk tambah'}</span>
+                </div>
             `;
             el.addEventListener('click', () => addToCart(item));
             menuContainer.appendChild(el);
@@ -465,7 +472,10 @@ function renderTransactions(transactions) {
     let dailyTotal = 0; // Variable to calculate total sales
 
     transactions.forEach(tx => {
-        dailyTotal += tx.total_price; // Accumulate total
+        // Only accumulate total if transaction is not canceled
+        if (tx.status !== 'canceled') {
+            dailyTotal += tx.total_price;
+        }
 
         const li = document.createElement('li');
         li.className = 'tx-item';
@@ -484,8 +494,17 @@ function renderTransactions(transactions) {
             itemsHtml = items.map(item => `${item.quantity}x ${item.name}`).join('<br>');
         }
 
-        // Generate notes HTML if exists
         const notesHtml = tx.notes ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; padding: 6px; background: var(--surface); border-radius: 4px;">Catatan: ${tx.notes}</div>` : '';
+        
+        // Generate status and cancel reason
+        let statusHtml = '';
+        if (tx.status === 'canceled') {
+            statusHtml = `<div style="font-size: 0.75rem; color: var(--red); margin-top: 6px; font-weight: 600;">Dibatalkan ${tx.cancel_reason ? `- Alasan: ${tx.cancel_reason}` : ''}</div>`;
+        } else if (tx.status === 'completed') {
+            statusHtml = `<div style="font-size: 0.75rem; color: #16a34a; margin-top: 6px; font-weight: 600;">Selesai</div>`;
+        } else {
+            statusHtml = `<div style="font-size: 0.75rem; color: #854d0e; margin-top: 6px; font-weight: 600;">Menunggu</div>`;
+        }
 
         li.innerHTML = `
             <div class="tx-item-header">
@@ -498,8 +517,9 @@ function renderTransactions(transactions) {
             <div class="tx-item-details">
                 ${itemsHtml}
                 ${notesHtml}
+                ${statusHtml}
             </div>
-            <div class="tx-item-summary">
+            <div class="tx-item-summary" ${tx.status === 'canceled' ? 'style="text-decoration: line-through; color: var(--text-light);"' : ''}>
                 <span>Total</span>
                 <span>Rp ${tx.total_price.toLocaleString('id-ID')}</span>
             </div>

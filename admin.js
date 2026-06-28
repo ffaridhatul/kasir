@@ -208,13 +208,50 @@ function renderAdminMenu(data) {
     });
 }
 
+// Helper untuk konversi file gambar ke Base64
+const getBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+});
+
 if(menuForm) {
     menuForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = inputId.value;
-        const payload = { category: inputCategory.value, name: inputName.value, price: parseInt(inputPrice.value) };
+        const fileInput = document.getElementById('menu-image');
+        
+        let imageUrl = null;
+        
+        // Cek jika user mengunggah file baru
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            // Validasi ukuran maksimal 2MB
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Ukuran gambar maksimal 2MB!', true);
+                return;
+            }
+            imageUrl = await getBase64(file);
+        }
+
+        const payload = { 
+            category: inputCategory.value, 
+            name: inputName.value, 
+            price: parseInt(inputPrice.value) 
+        };
+
+        // Tambahkan image_url ke payload jika ada gambar yang diunggah
+        if (imageUrl) {
+            payload.image_url = imageUrl;
+        }
 
         try {
+            // Animasi loading pada tombol
+            const saveBtn = document.getElementById('admin-save-btn');
+            saveBtn.textContent = 'Menyimpan...';
+            saveBtn.disabled = true;
+
             const method = id ? 'PUT' : 'POST';
             const url = id ? `${API_MENU_URL}/${id}` : API_MENU_URL;
             const response = await fetch(url, {
@@ -223,14 +260,21 @@ if(menuForm) {
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
+            
+            saveBtn.textContent = 'Simpan';
+            saveBtn.disabled = false;
+
             if (!result.success) throw new Error(result.message);
 
             showToast(id ? 'Menu diperbarui' : 'Menu ditambahkan');
             resetForm();
+            // Reset file input
+            fileInput.value = '';
             fetchAdminMenu();
         } catch (err) {
             console.error("Save Menu Error:", err);
             showToast('Gagal menyimpan menu', true);
+            document.getElementById('admin-save-btn').disabled = false;
         }
     });
 }

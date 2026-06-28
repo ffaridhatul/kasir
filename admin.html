@@ -37,7 +37,7 @@
     </header>
 
     <div class="admin-container">
-        
+
         <aside class="admin-sidebar">
             <nav class="sidebar-nav">
                 <button class="nav-item" data-target="modul-kasir">Kembali ke POS</button>
@@ -50,30 +50,53 @@
         </aside>
 
         <main class="admin-content">
-            
+
             <section id="modul-menu" class="modul-section active">
-                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px;">
+                <div
+                    style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px;">
                     <h3 style="margin-bottom: 15px;">Kelola Menu</h3>
-                    <form id="admin-menu-form" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                    <form id="admin-menu-form"
+                        style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
                         <input type="hidden" id="admin-id">
                         <div style="flex: 1; min-width: 120px;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Kategori</label>
-                            <input type="text" id="admin-category" placeholder="Contoh: Kebab" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                            <label
+                                style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Kategori</label>
+                            <input type="text" id="admin-category" placeholder="Contoh: Kebab" required
+                                style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
                         </div>
                         <div style="flex: 2; min-width: 150px;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nama Menu</label>
-                            <input type="text" id="admin-name" placeholder="Nama produk" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                            <label
+                                style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nama
+                                Menu</label>
+                            <input type="text" id="admin-name" placeholder="Nama produk" required
+                                style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label
+                                style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">
+                                Foto Produk (Opsional)
+                            </label>
+                            <input type="file" id="menu-image" accept="image/png, image/jpeg, image/webp"
+                                style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);">
+                            <small style="color: var(--text-light); display: block; margin-top: 5px;">Maks. 2MB.
+                                Kosongkan jika ingin pakai emoji otomatis.</small>
                         </div>
                         <div style="flex: 1; min-width: 100px;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Harga (Rp)</label>
-                            <input type="number" id="admin-price" placeholder="15000" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                            <label
+                                style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Harga
+                                (Rp)</label>
+                            <input type="number" id="admin-price" placeholder="15000" required
+                                style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
                         </div>
-                        <button type="submit" class="process-btn" id="admin-save-btn" style="width: auto; padding: 9px 16px;">Simpan</button>
-                        <button type="button" class="process-btn" id="admin-cancel-btn" style="width: auto; padding: 9px 16px; background: var(--text-light); box-shadow: none; display: none;">Batal</button>
+                        <button type="submit" class="process-btn" id="admin-save-btn"
+                            style="width: auto; padding: 9px 16px;">Simpan</button>
+                        <button type="button" class="process-btn" id="admin-cancel-btn"
+                            style="width: auto; padding: 9px 16px; background: var(--text-light); box-shadow: none; display: none;">Batal</button>
                     </form>
                 </div>
 
-                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
+                <div
+                    style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
                             <tr>
@@ -89,29 +112,39 @@
             </section>
 
             <section id="modul-users" class="modul-section">
-                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px;">
+                <div
+                    style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px;">
                     <h3 style="margin-bottom: 15px;">Tambah User Baru</h3>
-                    <form id="admin-user-form" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                    <form id="admin-user-form"
+                        style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
                         <div style="flex: 2; min-width: 150px;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Username</label>
-                            <input type="text" id="admin-user-name" placeholder="Username login" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                            <label
+                                style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Username</label>
+                            <input type="text" id="admin-user-name" placeholder="Username login" required
+                                style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
                         </div>
                         <div style="flex: 2; min-width: 150px;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Password</label>
-                            <input type="password" id="admin-user-password" placeholder="Password login" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                            <label
+                                style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Password</label>
+                            <input type="password" id="admin-user-password" placeholder="Password login" required
+                                style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
                         </div>
                         <div style="flex: 1; min-width: 120px;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Role</label>
-                            <select id="admin-user-role" required style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                            <label
+                                style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Role</label>
+                            <select id="admin-user-role" required
+                                style="width: 100%; padding: 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
                                 <option value="kasir">Kasir</option>
                                 <option value="admin" id="option-admin-role">Admin</option>
                             </select>
                         </div>
-                        <button type="submit" class="process-btn" id="admin-user-save-btn" style="width: auto; padding: 9px 16px;">Simpan</button>
+                        <button type="submit" class="process-btn" id="admin-user-save-btn"
+                            style="width: auto; padding: 9px 16px;">Simpan</button>
                     </form>
                 </div>
 
-                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
+                <div
+                    style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
                             <tr>
@@ -127,18 +160,22 @@
             </section>
 
             <section id="modul-transactions" class="modul-section">
-                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div
+                    style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                     <div>
                         <h3 style="margin-bottom: 4px;">Kelola Transaksi & Pesanan</h3>
                         <p style="font-size: 0.8rem; color: var(--text-muted);">Pantau dan selesaikan pesanan masuk.</p>
                     </div>
                     <div>
-                        <label style="font-size: 0.8rem; color: var(--text-muted); margin-right: 8px;">Filter Tanggal:</label>
-                        <input type="date" id="admin-tx-date" style="padding: 8px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
+                        <label style="font-size: 0.8rem; color: var(--text-muted); margin-right: 8px;">Filter
+                            Tanggal:</label>
+                        <input type="date" id="admin-tx-date"
+                            style="padding: 8px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); outline: none;">
                     </div>
                 </div>
 
-                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
+                <div
+                    style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border); overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
                             <tr>
@@ -156,16 +193,20 @@
             </section>
 
             <section id="modul-expenses" class="modul-section">
-                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border);">
+                <div
+                    style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border);">
                     <h3>Kelola Pengeluaran</h3>
-                    <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.9rem;">Fitur pencatatan biaya operasional dan pengeluaran toko.</p>
+                    <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.9rem;">Fitur pencatatan biaya
+                        operasional dan pengeluaran toko.</p>
                 </div>
             </section>
 
             <section id="modul-reports" class="modul-section">
-                <div style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border);">
+                <div
+                    style="background: var(--white); padding: 20px; border-radius: var(--radius-lg); border: 1.5px solid var(--border);">
                     <h3>Generate Report</h3>
-                    <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.9rem;">Fitur kalkulasi keuntungan bersih dan cetak laporan berkala.</p>
+                    <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.9rem;">Fitur kalkulasi keuntungan
+                        bersih dan cetak laporan berkala.</p>
                 </div>
             </section>
 
