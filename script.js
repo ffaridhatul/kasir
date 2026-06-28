@@ -268,6 +268,9 @@ async function processOrder() {
     const change = payment - total;
     const customerNameEl = document.getElementById('customer-name');
     const customerName = customerNameEl ? customerNameEl.value : '';
+    // Get notes element and value
+    const notesEl = document.getElementById('transaction-notes');
+    const notes = notesEl ? notesEl.value : '';
 
     const orderData = {
         items: cart,
@@ -276,6 +279,7 @@ async function processOrder() {
         change_amount: change,
         cashier_name: userSession ? userSession.username : 'Unknown', // Add cashier name from session
         customer_name: customerName, // Add customer name
+        notes: notes, // Add transaction notes
         timestamp: new Date().toISOString()
     };
 
@@ -298,6 +302,7 @@ async function processOrder() {
             cart = [];
             paymentInput.value = '';
             if (customerNameEl) customerNameEl.value = '';
+            if (notesEl) notesEl.value = ''; // Reset notes field
             renderCart();
             updateCartBadge(false);
             renderMenu();
@@ -310,7 +315,7 @@ async function processOrder() {
     } catch (err) {
         console.error('Network error:', err);
         showToast('Kesalahan jaringan.', true);
-    } finaly {
+    } finally {
         processBtn.classList.remove('loading');
         processBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -479,6 +484,9 @@ function renderTransactions(transactions) {
             itemsHtml = items.map(item => `${item.quantity}x ${item.name}`).join('<br>');
         }
 
+        // Generate notes HTML if exists
+        const notesHtml = tx.notes ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; padding: 6px; background: var(--surface); border-radius: 4px;">Catatan: ${tx.notes}</div>` : '';
+
         li.innerHTML = `
             <div class="tx-item-header">
                 <span>ID: #${tx.id}</span>
@@ -489,6 +497,7 @@ function renderTransactions(transactions) {
             </div>
             <div class="tx-item-details">
                 ${itemsHtml}
+                ${notesHtml}
             </div>
             <div class="tx-item-summary">
                 <span>Total</span>
