@@ -17,7 +17,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Checkout endpoint
 app.post("/api/checkout", async (req, res) => {
     try {
-        const { items, total_price, payment_amount, change_amount } = req.body;
+        const { items, total_price, payment_amount, change_amount, cashier_name, customer_name } = req.body;
 
         // Simple validation
         if (!items || items.length === 0) {
@@ -35,7 +35,9 @@ app.post("/api/checkout", async (req, res) => {
                     items: items,
                     total_price: total_price,
                     amount_paid: payment_amount, // Mapped to DB column amount_paid
-                    change_amount: change_amount
+                    change_amount: change_amount,
+                    cashier_name: cashier_name,
+                    customer_name: customer_name
                 }
             ]);
 

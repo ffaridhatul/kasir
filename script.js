@@ -266,12 +266,16 @@ async function processOrder() {
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const payment = parseFloat(paymentInput.value) || 0;
     const change = payment - total;
+    const customerNameEl = document.getElementById('customer-name');
+    const customerName = customerNameEl ? customerNameEl.value : '';
 
     const orderData = {
         items: cart,
         total_price: total,
         payment_amount: payment,
         change_amount: change,
+        cashier_name: userSession ? userSession.username : 'Unknown', // Add cashier name from session
+        customer_name: customerName, // Add customer name
         timestamp: new Date().toISOString()
     };
 
@@ -293,6 +297,7 @@ async function processOrder() {
         if (response.ok) {
             cart = [];
             paymentInput.value = '';
+            if (customerNameEl) customerNameEl.value = '';
             renderCart();
             updateCartBadge(false);
             renderMenu();
@@ -305,7 +310,7 @@ async function processOrder() {
     } catch (err) {
         console.error('Network error:', err);
         showToast('Kesalahan jaringan.', true);
-    } finally {
+    } finaly {
         processBtn.classList.remove('loading');
         processBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -478,6 +483,9 @@ function renderTransactions(transactions) {
             <div class="tx-item-header">
                 <span>ID: #${tx.id}</span>
                 <span>${timeStr}</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 4px 0;">
+                Kasir: ${tx.cashier_name || '-'} ${tx.customer_name ? `| Pembeli: ${tx.customer_name}` : ''}
             </div>
             <div class="tx-item-details">
                 ${itemsHtml}
