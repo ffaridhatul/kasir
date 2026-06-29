@@ -638,6 +638,63 @@ body {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    min-width: 0;
+}
+
+.input-prefix {
+    display: flex;
+    align-items: center;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    width: 100%;
+    min-width: 0;
+}
+
+.input-prefix input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 8px 10px;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    background: transparent;
+    text-align: right;
+    min-width: 0;
+    width: 100%;
+}
+
+/* --- GRID INPUT KERANJANG --- */
+.input-grid {
+    display: grid;
+    grid-template-columns: 42% 58%;
+    gap: 10px;
+    margin: 8px 0;
+    width: 100%;
+}
+
+.input-grid .payment-field label {
+    font-size: 0.72rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.input-grid .input-prefix input,
+.input-grid .input-prefix select {
+    font-size: 0.82rem;
+    padding: 8px !important;
+    width: 100%;
+    min-width: 0;
+}
+
+.input-grid .input-prefix span {
+    padding: 8px 10px !important;
+    font-size: 0.8rem;
 }
 
 .payment-field label {
@@ -1094,6 +1151,33 @@ body {
     .nav-menu {
         right: 14px;
         top: calc(var(--topbar-h) + 8px);
+    }
+
+    .cart-panel {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        /* UBAH: Tinggikan sedikit keranjang dari 85vh menjadi 92vh agar lebih lega */
+        height: 92vh;
+        border-left: none;
+        border-top: 1.5px solid var(--border);
+        border-radius: 20px 20px 0 0;
+        transform: translateY(100%);
+        box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    /* TAMBAHKAN: Pastikan list pesanan tidak pernah hilang saat tergencet */
+    #cart-list {
+        min-height: 120px;
+        flex: 1 1 auto;
+    }
+
+    /* TAMBAHKAN: Perkecil padding di HP agar hemat ruang */
+    .cart-footer {
+        padding: 12px;
+        flex-shrink: 0;
     }
 }
 

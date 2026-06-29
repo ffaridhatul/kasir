@@ -113,7 +113,7 @@ app.delete("/api/menu/upload", async (req, res) => {
 
 app.post("/api/checkout", async (req, res) => {
     try {
-        const { items, total_price, payment_amount, change_amount, cashier_name, customer_name, notes } = req.body;
+        const { items, total_price, payment_amount, change_amount, cashier_name, customer_name, notes, payment_method } = req.body; // Added payment_method
 
         if (!items || items.length === 0) {
             return res.status(400).json({ success: false, message: "Cart is empty" });
@@ -129,6 +129,7 @@ app.post("/api/checkout", async (req, res) => {
                 cashier_name: cashier_name,
                 customer_name: customer_name,
                 notes: notes,
+                payment_method: payment_method || 'tunai', // Added
                 status: 'pending'
             }]);
 

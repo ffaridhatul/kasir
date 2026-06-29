@@ -154,7 +154,7 @@ function renderMenu() {
             el.className = 'menu-item' + (inCart ? ' selected' : '');
 
             // Logika render: Jika ada image_url tampilkan gambar, jika tidak fallback ke Emoji
-            const mediaElement = item.image_url 
+            const mediaElement = item.image_url
                 ? `<div class="menu-item-image-wrapper"><img src="${item.image_url}" alt="${item.name}" class="menu-item-image" loading="lazy"></div>`
                 : `<div class="menu-item-emoji-wrapper"><div class="menu-item-emoji">${getEmoji(item)}</div></div>`;
 
@@ -183,6 +183,18 @@ function addToCart(item) {
     updateCartBadge(true);
     renderCart();
     renderMenu(); // refresh "di keranjang" hint
+}
+
+// Added logic for Payment Method auto-fill
+const paymentMethodSelect = document.getElementById('payment-method');
+if (paymentMethodSelect) {
+    paymentMethodSelect.addEventListener('change', (e) => {
+        if (e.target.value === 'qris') {
+            const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+            paymentInput.value = total;
+            calculateChange();
+        }
+    });
 }
 
 window.changeQuantity = function (id, delta) {
@@ -275,18 +287,19 @@ async function processOrder() {
     const change = payment - total;
     const customerNameEl = document.getElementById('customer-name');
     const customerName = customerNameEl ? customerNameEl.value : '';
-    // Get notes element and value
     const notesEl = document.getElementById('transaction-notes');
     const notes = notesEl ? notesEl.value : '';
+    const paymentMethod = paymentMethodSelect ? paymentMethodSelect.value : 'tunai'; // Added
 
     const orderData = {
         items: cart,
         total_price: total,
         payment_amount: payment,
         change_amount: change,
-        cashier_name: userSession ? userSession.username : 'Unknown', // Add cashier name from session
-        customer_name: customerName, // Add customer name
-        notes: notes, // Add transaction notes
+        cashier_name: userSession ? userSession.username : 'Unknown',
+        customer_name: customerName,
+        notes: notes,
+        payment_method: paymentMethod, // Added
         timestamp: new Date().toISOString()
     };
 
@@ -309,12 +322,12 @@ async function processOrder() {
             cart = [];
             paymentInput.value = '';
             if (customerNameEl) customerNameEl.value = '';
-            if (notesEl) notesEl.value = ''; // Reset notes field
+            if (notesEl) notesEl.value = '';
+            if (paymentMethodSelect) paymentMethodSelect.value = 'tunai'; // Reset dropdown
             renderCart();
             updateCartBadge(false);
             renderMenu();
             showToast('Transaksi berhasil diproses!');
-            // close mobile drawer if open
             closeMobileCart();
         } else {
             showToast('Gagal memproses transaksi.', true);
@@ -329,7 +342,7 @@ async function processOrder() {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
             Proses Pesanan`;
-        calculateChange(); // re-enable if needed
+        calculateChange();
     }
 }
 
@@ -468,11 +481,9 @@ function renderTransactions(transactions) {
     }
 
     txEmpty.style.display = 'none';
-
-    let dailyTotal = 0; // Variable to calculate total sales
+    let dailyTotal = 0;
 
     transactions.forEach(tx => {
-        // Only accumulate total if transaction is not canceled
         if (tx.status !== 'canceled') {
             dailyTotal += tx.total_price;
         }
@@ -483,7 +494,6 @@ function renderTransactions(transactions) {
         const dateObj = new Date(tx.created_datetime);
         const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-        // Parse items if it's stringified JSON, otherwise use as is
         let items = tx.items;
         if (typeof items === 'string') {
             try { items = JSON.parse(items); } catch (e) { }
@@ -495,8 +505,8 @@ function renderTransactions(transactions) {
         }
 
         const notesHtml = tx.notes ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; padding: 6px; background: var(--surface); border-radius: 4px;">Catatan: ${tx.notes}</div>` : '';
-        
-        // Generate status and cancel reason
+        const payMethodBadge = tx.payment_method ? `<span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: #334155; margin-left: 6px;">${tx.payment_method.toUpperCase()}</span>` : ''; // Added
+
         let statusHtml = '';
         if (tx.status === 'canceled') {
             statusHtml = `<div style="font-size: 0.75rem; color: var(--red); margin-top: 6px; font-weight: 600;">Dibatalkan ${tx.cancel_reason ? `- Alasan: ${tx.cancel_reason}` : ''}</div>`;
@@ -508,7 +518,7 @@ function renderTransactions(transactions) {
 
         li.innerHTML = `
             <div class="tx-item-header">
-                <span>ID: #${tx.id}</span>
+                <span>ID: #${tx.id} ${payMethodBadge}</span>
                 <span>${timeStr}</span>
             </div>
             <div style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 4px 0;">
@@ -527,7 +537,6 @@ function renderTransactions(transactions) {
         txList.appendChild(li);
     });
 
-    // Display formatted total sales
     if (txDailyTotal) {
         txDailyTotal.textContent = `Rp ${dailyTotal.toLocaleString('id-ID')}`;
     }

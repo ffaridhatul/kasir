@@ -149,26 +149,39 @@
                         <span id="total-price" class="total-value">Rp 0</span>
                     </div>
 
-                    <div class="payment-field" style="margin-bottom: 10px;">
-                        <label for="customer-name">Nama Pembeli (Opsional)</label>
-                        <div class="input-prefix">
-                            <input type="text" id="customer-name" placeholder="Nama pembeli" style="text-align: left;">
+                    <div class="input-grid">
+                        <div class="payment-field">
+                            <label for="customer-name">Pelanggan</label>
+                            <div class="input-prefix">
+                                <input type="text" id="customer-name" placeholder="Opsional" style="text-align: left;">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="payment-field" style="margin-bottom: 10px;">
-                        <label for="transaction-notes">Catatan (Opsional)</label>
-                        <div class="input-prefix">
-                            <input type="text" id="transaction-notes" placeholder="Contoh: Pedas, dibungkus pisah"
-                                style="text-align: left;">
+                        <div class="payment-field">
+                            <label for="transaction-notes">Catatan</label>
+                            <div class="input-prefix">
+                                <input type="text" id="transaction-notes" placeholder="Opsional"
+                                    style="text-align: left;">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="payment-field">
-                        <label for="payment-amount">Uang Diterima</label>
-                        <div class="input-prefix">
-                            <span>Rp</span>
-                            <input type="number" id="payment-amount" min="0" placeholder="0">
+                        <div class="payment-field">
+                            <label for="payment-method">Pembayaran</label>
+                            <div class="input-prefix" style="padding: 0;">
+                                <select id="payment-method"
+                                    style="width: 100%; border: none; outline: none; padding: 10px; background: transparent; font-family: var(--font); font-size: 0.85rem; font-weight: 600; color: var(--text); cursor: pointer;">
+                                    <option value="tunai">Tunai</option>
+                                    <option value="qris">QRIS</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="payment-field">
+                            <label for="payment-amount">Diterima</label>
+                            <div class="input-prefix">
+                                <span>Rp</span>
+                                <input type="number" id="payment-amount" min="0" placeholder="0">
+                            </div>
                         </div>
                     </div>
                     <div class="summary-row change-row" id="change-row">

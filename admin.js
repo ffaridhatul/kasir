@@ -7,14 +7,13 @@ if (!userSession) {
 }
 
 // ==========================================
-// API URLS — semua request lewat backend Vercel
-// Tidak ada Supabase credentials di file ini
+// API URLS
 // ==========================================
-const API_BASE       = "https://chasierkebabckl.vercel.app/api";
-const API_MENU_URL   = `${API_BASE}/menu`;
-const API_UPLOAD_URL = `${API_BASE}/menu/upload`; // endpoint upload baru
-const API_USERS_URL  = `${API_BASE}/users`;
-const API_TX_URL     = `${API_BASE}/transactions`;
+const API_BASE = "https://chasierkebabckl.vercel.app/api";
+const API_MENU_URL = `${API_BASE}/menu`;
+const API_UPLOAD_URL = `${API_BASE}/menu/upload`;
+const API_USERS_URL = `${API_BASE}/users`;
+const API_TX_URL = `${API_BASE}/transactions`;
 
 // ==========================================
 // GLOBAL — TOAST NOTIFICATION
@@ -32,27 +31,153 @@ function showToast(msg, isError = false) {
 }
 
 // ==========================================
+// CUSTOM CONFIRM MODAL
+// Menggantikan browser native confirm() / alert() / prompt()
+// Usage: showConfirm({ ... }).then(result => { ... })
+// ==========================================
+const confirmOverlay = document.getElementById('confirm-overlay');
+const confirmTitle = document.getElementById('confirm-title');
+const confirmMessage = document.getElementById('confirm-message');
+const confirmOrderInfo = document.getElementById('confirm-order-info');
+const confirmReasonArea = document.getElementById('confirm-reason-area');
+const confirmReasonInput = document.getElementById('confirm-reason-input');
+const confirmIconCircle = document.getElementById('confirm-icon-circle');
+const confirmIconEmoji = document.getElementById('confirm-icon-emoji');
+const confirmBtnBatal = document.getElementById('confirm-btn-batal');
+const confirmBtnOk = document.getElementById('confirm-btn-ok');
+
+let _confirmResolve = null;
+
+/**
+ * Tampilkan modal konfirmasi custom.
+ * @param {Object} opts
+ * @param {string} opts.title         - Judul modal
+ * @param {string} opts.message       - Pesan deskripsi
+ * @param {string} [opts.orderInfo]   - Ringkasan info pesanan (opsional)
+ * @param {boolean} [opts.needReason] - Apakah perlu input alasan?
+ * @param {'green'|'danger'} [opts.variant] - Warna icon
+ * @param {string} [opts.okLabel]     - Teks tombol OK
+ * @param {string} [opts.icon]        - Emoji icon
+ * @returns {Promise<{confirmed: boolean, reason?: string}>}
+ */
+function showConfirm(opts = {}) {
+    return new Promise((resolve) => {
+        _confirmResolve = resolve;
+
+        // Isi konten modal
+        confirmTitle.textContent = opts.title || 'Konfirmasi';
+        confirmMessage.textContent = opts.message || 'Apakah Anda yakin?';
+
+        // Order info (ringkasan pesanan)
+        if (opts.orderInfo) {
+            confirmOrderInfo.innerHTML = opts.orderInfo;
+            confirmOrderInfo.style.display = 'block';
+        } else {
+            confirmOrderInfo.style.display = 'none';
+        }
+
+        // Reason area (untuk cancel)
+        if (opts.needReason) {
+            confirmReasonArea.classList.add('show');
+            confirmReasonInput.value = '';
+            // Focus setelah animasi
+            setTimeout(() => confirmReasonInput.focus(), 280);
+        } else {
+            confirmReasonArea.classList.remove('show');
+            confirmReasonInput.value = '';
+        }
+
+        // Icon & warna
+        const variant = opts.variant || 'green';
+        confirmIconCircle.className = `confirm-icon-circle ${variant}`;
+        confirmIconEmoji.textContent = opts.icon || (variant === 'danger' ? '🚫' : '✅');
+
+        // Tombol OK styling
+        confirmBtnOk.textContent = opts.okLabel || 'Ya, Lanjutkan';
+        confirmBtnOk.className = variant === 'danger'
+            ? 'btn-confirm-ok-red'
+            : 'btn-confirm-ok-green';
+
+        // Tampilkan modal
+        confirmOverlay.classList.add('show');
+    });
+}
+
+function closeConfirm() {
+    confirmOverlay.classList.remove('show');
+    _confirmResolve = null;
+}
+
+// Event listener tombol modal
+confirmBtnBatal.addEventListener('click', () => {
+    if (_confirmResolve) _confirmResolve({ confirmed: false });
+    closeConfirm();
+});
+
+confirmBtnOk.addEventListener('click', () => {
+    // Jika perlu alasan, validasi dulu
+    if (confirmReasonArea.classList.contains('show')) {
+        const reason = confirmReasonInput.value.trim();
+        if (!reason) {
+            confirmReasonInput.style.borderColor = 'var(--red)';
+            confirmReasonInput.focus();
+            setTimeout(() => {
+                confirmReasonInput.style.borderColor = '';
+            }, 1500);
+            return;
+        }
+        if (_confirmResolve) _confirmResolve({ confirmed: true, reason });
+    } else {
+        if (_confirmResolve) _confirmResolve({ confirmed: true });
+    }
+    closeConfirm();
+});
+
+// Tutup jika klik overlay
+confirmOverlay.addEventListener('click', (e) => {
+    if (e.target === confirmOverlay) {
+        if (_confirmResolve) _confirmResolve({ confirmed: false });
+        closeConfirm();
+    }
+});
+
+// Tutup dengan Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && confirmOverlay.classList.contains('show')) {
+        if (_confirmResolve) _confirmResolve({ confirmed: false });
+        closeConfirm();
+    }
+});
+
+// ==========================================
 // ROLE BASED ACCESS CONTROL (UI)
 // ==========================================
 if (userSession.role_type === 'kasir') {
-    // Sembunyikan modul yang tidak boleh diakses kasir
     document.querySelector('[data-target="modul-menu"]').style.display = 'none';
     document.querySelector('[data-target="modul-users"]').style.display = 'none';
     document.querySelector('[data-target="modul-expenses"]').style.display = 'none';
     document.querySelector('[data-target="modul-reports"]').style.display = 'none';
-
-    // Default aktifkan modul transaksi untuk kasir
-    document.querySelector('[data-target="modul-menu"]').classList.remove('active');
-    document.getElementById('modul-menu').classList.remove('active');
-    document.querySelector('[data-target="modul-transactions"]').classList.add('active');
-    document.getElementById('modul-transactions').classList.add('active');
 }
+
+// Default: semua role masuk ke Kelola Transaksi saat buka halaman admin
+document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+document.querySelectorAll('.modul-section').forEach(s => s.classList.remove('active'));
+document.querySelector('[data-target="modul-transactions"]').classList.add('active');
+document.getElementById('modul-transactions').classList.add('active');
 
 // ==========================================
 // TRANSACTIONS MANAGEMENT
 // ==========================================
 const txDateInput = document.getElementById('admin-tx-date');
-const txList      = document.getElementById('admin-tx-list');
+const txList = document.getElementById('admin-tx-list');       // tabel desktop
+const txCardContainer = document.getElementById('admin-tx-cards');      // card mobile
+const txEmptyState = document.getElementById('tx-empty-state');
+const txLoadingSkeleton = document.getElementById('tx-loading-skeleton');
+
+// Stat elements
+const statTotalOmset = document.getElementById('stat-total-omset');
+const statCompleted = document.getElementById('stat-completed');
+const statPending = document.getElementById('stat-pending');
 
 if (txDateInput) {
     const now = new Date();
@@ -61,98 +186,288 @@ if (txDateInput) {
 }
 
 async function fetchAdminTransactions(dateStr = txDateInput.value) {
-    if (!txList) return;
+    if (!txList && !txCardContainer) return;
+
+    // Tampilkan skeleton, sembunyikan empty state
+    if (txLoadingSkeleton) txLoadingSkeleton.style.display = 'flex';
+    if (txEmptyState) txEmptyState.classList.remove('show');
+
     try {
         const [y, m, d] = dateStr.split('-');
         const startDate = new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
-        const endDate   = new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
+        const endDate = new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
 
         const response = await fetch(`${API_TX_URL}?start=${startDate}&end=${endDate}`);
-        const result   = await response.json();
+        const result = await response.json();
 
         if (!result.success) throw new Error(result.message);
         renderAdminTransactions(result.data);
     } catch (err) {
         console.error("Fetch Transactions Error:", err);
         showToast('Gagal memuat transaksi', true);
+        if (txLoadingSkeleton) txLoadingSkeleton.style.display = 'none';
     }
 }
 
 function renderAdminTransactions(data) {
+    // Sembunyikan skeleton
+    if (txLoadingSkeleton) txLoadingSkeleton.style.display = 'none';
+
+    // Hitung stats
+    let totalOmset = 0;
+    let cntCompleted = 0;
+    let cntPending = 0;
+
+    data.forEach(tx => {
+        if (tx.status === 'completed') { totalOmset += tx.total_price; cntCompleted++; }
+        if (tx.status === 'pending') { cntPending++; }
+    });
+
+    if (statTotalOmset) statTotalOmset.textContent = `Rp ${totalOmset.toLocaleString('id-ID')}`;
+    if (statCompleted) statCompleted.textContent = `${cntCompleted} pesanan`;
+    if (statPending) statPending.textContent = `${cntPending} pesanan`;
+
+    // Empty state
+    if (data.length === 0) {
+        if (txEmptyState) txEmptyState.classList.add('show');
+        if (txList) txList.innerHTML = '';
+        // Bersihkan card container kecuali skeleton
+        if (txCardContainer) {
+            Array.from(txCardContainer.children).forEach(el => {
+                if (el.id !== 'tx-loading-skeleton') el.remove();
+            });
+        }
+        return;
+    }
+
+    if (txEmptyState) txEmptyState.classList.remove('show');
+
+    // --- Render CARD LIST (mobile/tablet) ---
+    renderTxCards(data);
+
+    // --- Render TABLE (desktop) ---
+    renderTxTable(data);
+}
+
+function renderTxCards(data) {
+    if (!txCardContainer) return;
+
+    Array.from(txCardContainer.children).forEach(el => {
+        if (el.id !== 'tx-loading-skeleton') el.remove();
+    });
+
+    data.forEach(tx => {
+        const timeStr = new Date(tx.created_datetime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const items = typeof tx.items === 'string' ? JSON.parse(tx.items) : tx.items;
+        const itemsStr = items.map(i => `${i.quantity}× ${i.name}`).join(' • ');
+
+        const statusClass = tx.status === 'completed' ? 'status-completed'
+            : tx.status === 'canceled' ? 'status-canceled'
+                : 'status-pending';
+
+        const statusLabel = tx.status === 'completed' ? 'Selesai'
+            : tx.status === 'canceled' ? 'Dibatalkan'
+                : 'Menunggu';
+
+        const statusBadge = `<span class="status-badge ${tx.status}">${statusLabel}</span>`;
+        const payMethodBadge = tx.payment_method ? `<span style="font-size:0.65rem; background:var(--surface); padding:2px 6px; border-radius:4px; margin-left:6px; border:1px solid var(--border); color:var(--text-muted);">${tx.payment_method.toUpperCase()}</span>` : ''; // Added
+
+        const customerHtml = tx.customer_name
+            ? `<div class="tx-card-customer">${tx.customer_name} <span>— ${tx.cashier_name || '-'}</span></div>`
+            : `<div class="tx-card-customer"><span style="font-style:italic; font-weight:400;">Tanpa nama</span> <span>— ${tx.cashier_name || '-'}</span></div>`;
+
+        const notesHtml = tx.notes
+            ? `<div class="tx-card-notes">📝 ${tx.notes}</div>` : '';
+
+        const cancelHtml = (tx.status === 'canceled' && tx.cancel_reason)
+            ? `<div class="tx-card-cancel-reason">Alasan batal: ${tx.cancel_reason}</div>` : '';
+
+        let actionsHtml = '';
+        if (tx.status === 'pending') {
+            actionsHtml = `
+                <button class="tx-btn tx-btn-complete"
+                    onclick="updateTxStatus(${tx.id}, 'completed', event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Selesai
+                </button>
+                <button class="tx-btn tx-btn-cancel"
+                    onclick="updateTxStatus(${tx.id}, 'canceled', event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Batalkan
+                </button>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = `tx-card ${statusClass}`;
+        card.dataset.id = tx.id;
+        card.innerHTML = `
+            <div class="tx-card-top">
+                <div class="tx-card-id-block">
+                    <span class="tx-card-id">#${tx.id} ${payMethodBadge}</span>
+                    <span class="tx-card-meta">
+                        🕐 ${timeStr}
+                    </span>
+                </div>
+                ${statusBadge}
+            </div>
+            <div class="tx-card-body">
+                ${customerHtml}
+                <div class="tx-card-items">${itemsStr}</div>
+                ${notesHtml}
+                ${cancelHtml}
+            </div>
+            <div class="tx-card-footer">
+                <span class="tx-card-total"
+                    ${tx.status === 'canceled' ? 'style="text-decoration: line-through; color: var(--text-muted);"' : ''}>
+                    Rp ${tx.total_price.toLocaleString('id-ID')}
+                </span>
+                <div class="tx-card-actions">${actionsHtml}</div>
+            </div>
+        `;
+        txCardContainer.appendChild(card);
+    });
+}
+
+// ---- Render Tabel (Desktop ≥1024px) ----
+function renderTxTable(data) {
+    if (!txList) return;
     txList.innerHTML = '';
 
     if (data.length === 0) {
-        txList.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Tidak ada transaksi pada tanggal ini.</td></tr>`;
+        txList.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted); font-size:0.88rem;">Tidak ada transaksi pada tanggal ini.</td></tr>`;
         return;
     }
 
     data.forEach(tx => {
-        const timeStr    = new Date(tx.created_datetime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        const items      = typeof tx.items === 'string' ? JSON.parse(tx.items) : tx.items;
-        const itemsHtml  = items.map(i => `${i.quantity}x ${i.name}`).join('<br>');
+        const timeStr = new Date(tx.created_datetime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const items = typeof tx.items === 'string' ? JSON.parse(tx.items) : tx.items;
+        const itemsHtml = items.map(i => `${i.quantity}× ${i.name}`).join('<br>');
 
-        let statusBadge  = '';
+        const statusLabel = tx.status === 'completed' ? 'Selesai'
+            : tx.status === 'canceled' ? 'Dibatalkan'
+                : 'Menunggu';
+
+        const statusBadge = `<span class="status-badge ${tx.status}">${statusLabel}</span>`;
+
         let actionButtons = '';
-
         if (tx.status === 'pending') {
-            statusBadge   = `<span style="background:#fef08a; color:#854d0e; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Menunggu</span>`;
             actionButtons = `
-                <div style="display:flex; gap:4px; justify-content:center;">
-                    <button onclick="updateTxStatus(${tx.id}, 'completed')" style="padding:4px 8px; background:#16a34a; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.8rem;">Selesai</button>
-                    <button onclick="updateTxStatus(${tx.id}, 'canceled')"  style="padding:4px 8px; background:var(--red); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.8rem;">Batal</button>
+                <div style="display:flex; gap:6px; justify-content:center;">
+                    <button onclick="updateTxStatus(${tx.id}, 'completed', event)"
+                        class="tx-btn tx-btn-complete" style="padding:6px 12px; font-size:0.78rem; min-height:32px;">
+                        ✓ Selesai
+                    </button>
+                    <button onclick="updateTxStatus(${tx.id}, 'canceled', event)"
+                        class="tx-btn tx-btn-cancel" style="padding:6px 12px; font-size:0.78rem; min-height:32px;">
+                        ✕ Batal
+                    </button>
                 </div>`;
-        } else if (tx.status === 'completed') {
-            statusBadge   = `<span style="background:#bbf7d0; color:#166534; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Selesai</span>`;
-            actionButtons = `<span style="font-size:0.8rem; color:var(--text-muted);">-</span>`;
-        } else if (tx.status === 'canceled') {
-            statusBadge   = `<span style="background:#fecaca; color:#991b1b; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Dibatalkan</span>`;
-            actionButtons = `<span style="font-size:0.8rem; color:var(--text-muted);">-</span>`;
+        } else {
+            actionButtons = `<span style="font-size:0.8rem; color:var(--text-muted);">—</span>`;
         }
 
-        const customerInfo     = tx.customer_name ? `<b>${tx.customer_name}</b>` : '<i style="color:var(--text-muted);">Tanpa nama</i>';
-        const notesHtml        = tx.notes ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Catatan: ${tx.notes}</div>` : '';
-        const cancelReasonHtml = (tx.status === 'canceled' && tx.cancel_reason) ? `<div style="font-size:0.75rem; color:var(--red); margin-top:4px;">Alasan: ${tx.cancel_reason}</div>` : '';
+        const customerInfo = tx.customer_name
+            ? `<b>${tx.customer_name}</b>`
+            : `<i style="color:var(--text-muted);">Tanpa nama</i>`;
+        const notesHtml = tx.notes
+            ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">📝 ${tx.notes}</div>` : '';
+        const cancelReasonHtml = (tx.status === 'canceled' && tx.cancel_reason)
+            ? `<div style="font-size:0.73rem; color:var(--red); margin-top:4px;">Alasan: ${tx.cancel_reason}</div>` : '';
+
+        const payMethodBadge = tx.payment_method ? `<div style="margin-top:4px;"><span style="font-size:0.7rem; background:var(--surface); padding:2px 6px; border-radius:4px; border:1px solid var(--border); color:var(--text-muted);">${tx.payment_method.toUpperCase()}</span></div>` : ''; // Added
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td style="padding:10px; border-bottom:1px solid var(--border); vertical-align:top;">
+            <td>
                 <b>#${tx.id}</b><br>
-                <span style="font-size:0.8rem; color:var(--text-muted);">${timeStr}</span><br>
-                <span style="font-size:0.75rem; color:var(--text-muted);">Oleh: ${tx.cashier_name}</span>
+                <span style="font-size:0.78rem; color:var(--text-muted);">${timeStr}</span><br>
+                <span style="font-size:0.73rem; color:var(--text-light);">Oleh: ${tx.cashier_name || '-'}</span>
             </td>
-            <td style="padding:10px; border-bottom:1px solid var(--border); vertical-align:top;">${customerInfo}${notesHtml}</td>
-            <td style="padding:10px; border-bottom:1px solid var(--border); vertical-align:top; font-size:0.8rem;">${itemsHtml}</td>
-            <td style="padding:10px; border-bottom:1px solid var(--border); vertical-align:top; font-weight:600;">Rp ${tx.total_price.toLocaleString('id-ID')}</td>
-            <td style="padding:10px; border-bottom:1px solid var(--border); vertical-align:top;">${statusBadge}${cancelReasonHtml}</td>
-            <td style="padding:10px; border-bottom:1px solid var(--border); text-align:center; vertical-align:top;">${actionButtons}</td>
+            <td>${customerInfo}${notesHtml}</td>
+            <td style="font-size:0.82rem;">${itemsHtml}</td>
+            <td>
+                <span style="font-weight:700; ${tx.status === 'canceled' ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">
+                    Rp ${tx.total_price.toLocaleString('id-ID')}
+                </span>
+                ${payMethodBadge}
+            </td>
+            <td>${statusBadge}${cancelReasonHtml}</td>
+            <td style="text-align:center;">${actionButtons}</td>
         `;
         txList.appendChild(tr);
     });
 }
 
-window.updateTxStatus = async function (id, status) {
-    let cancelReason = null;
-
-    if (status === 'canceled') {
-        cancelReason = prompt('Masukkan alasan pembatalan pesanan ini:');
-        if (!cancelReason || cancelReason.trim() === '') {
-            alert('Alasan pembatalan wajib diisi!');
-            return;
-        }
-    } else if (status === 'completed') {
-        if (!confirm('Tandai pesanan ini sebagai selesai?')) return;
+// ---- Update Status Pesanan ----
+window.updateTxStatus = async function (id, status, event) {
+    // Cari data pesanan dari card untuk ditampilkan di modal
+    let orderInfoHtml = '';
+    const card = document.querySelector(`.tx-card[data-id="${id}"]`);
+    if (card) {
+        const cardId = card.querySelector('.tx-card-id')?.textContent || '';
+        const cardItems = card.querySelector('.tx-card-items')?.textContent || '';
+        const cardTotal = card.querySelector('.tx-card-total')?.textContent || '';
+        orderInfoHtml = `<b>${cardId}</b><br>${cardItems}<br><b>${cardTotal}</b>`;
     }
 
+    if (status === 'completed') {
+        const result = await showConfirm({
+            title: 'Tandai Pesanan Selesai?',
+            message: 'Pesanan ini akan ditandai sebagai selesai dan tidak bisa dikembalikan.',
+            orderInfo: orderInfoHtml,
+            variant: 'green',
+            icon: '✅',
+            okLabel: 'Ya, Selesaikan'
+        });
+        if (!result.confirmed) return;
+
+    } else if (status === 'canceled') {
+        const result = await showConfirm({
+            title: 'Batalkan Pesanan?',
+            message: 'Masukkan alasan pembatalan pesanan ini.',
+            orderInfo: orderInfoHtml,
+            needReason: true,
+            variant: 'danger',
+            icon: '🚫',
+            okLabel: 'Ya, Batalkan'
+        });
+        if (!result.confirmed) return;
+
+        // Gunakan alasan dari modal, bukan dari prompt()
+        try {
+            const response = await fetch(`${API_TX_URL}/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'canceled', cancel_reason: result.reason })
+            });
+            const res = await response.json();
+            if (!res.success) throw new Error(res.message);
+            showToast('Pesanan berhasil dibatalkan');
+            fetchAdminTransactions();
+        } catch (err) {
+            console.error("Update Status Error:", err);
+            showToast('Gagal membatalkan pesanan', true);
+        }
+        return; // early return, sudah handle sendiri
+    }
+
+    // Handle 'completed'
     try {
         const response = await fetch(`${API_TX_URL}/${id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status, cancel_reason: cancelReason })
+            body: JSON.stringify({ status, cancel_reason: null })
         });
         const result = await response.json();
-
         if (!result.success) throw new Error(result.message);
-        showToast(`Pesanan ${status === 'completed' ? 'diselesaikan' : 'dibatalkan'}!`);
+        showToast('Pesanan berhasil diselesaikan! 🎉');
         fetchAdminTransactions();
     } catch (err) {
         console.error("Update Status Error:", err);
@@ -163,20 +478,19 @@ window.updateTxStatus = async function (id, status) {
 // ==========================================
 // MENU MANAGEMENT
 // ==========================================
-const menuForm     = document.getElementById('admin-menu-form');
-const inputId      = document.getElementById('admin-id');
+const menuForm = document.getElementById('admin-menu-form');
+const inputId = document.getElementById('admin-id');
 const inputCategory = document.getElementById('admin-category');
-const inputName    = document.getElementById('admin-name');
-const inputPrice   = document.getElementById('admin-price');
-const menuList     = document.getElementById('admin-menu-list');
-const btnCancel    = document.getElementById('admin-cancel-btn');
+const inputName = document.getElementById('admin-name');
+const inputPrice = document.getElementById('admin-price');
+const menuList = document.getElementById('admin-menu-list');
+const btnCancel = document.getElementById('admin-cancel-btn');
 
-// --- Fetch & Render ---
 async function fetchAdminMenu() {
     if (!menuList) return;
     try {
         const response = await fetch(API_MENU_URL);
-        const result   = await response.json();
+        const result = await response.json();
         if (!result.success) throw new Error(result.message);
         renderAdminMenu(result.data);
     } catch (err) {
@@ -188,10 +502,9 @@ async function fetchAdminMenu() {
 function renderAdminMenu(data) {
     menuList.innerHTML = '';
     data.forEach(item => {
-        // Escape single quote pada string agar tidak merusak inline onclick
-        const safeCat  = (item.category || '').replace(/'/g, "\\'");
+        const safeCat = (item.category || '').replace(/'/g, "\\'");
         const safeName = (item.name || '').replace(/'/g, "\\'");
-        const safeUrl  = (item.image_url || '').replace(/'/g, "\\'");
+        const safeUrl = (item.image_url || '').replace(/'/g, "\\'");
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -215,151 +528,100 @@ function renderAdminMenu(data) {
     });
 }
 
-// --- Upload Foto ke Backend (bukan Base64, bukan Supabase langsung) ---
-// File dikirim sebagai FormData → /api/menu/upload → Vercel → Supabase Storage
-// Credentials Supabase tidak pernah keluar dari server
 async function uploadMenuImage(file) {
     const formData = new FormData();
-    formData.append('image', file); // key 'image' sesuai multer di backend
-
-    // PENTING: Jangan set Content-Type header secara manual
-    // Browser akan otomatis set 'multipart/form-data' beserta boundary yang benar
-    const response = await fetch(API_UPLOAD_URL, {
-        method: 'POST',
-        body: formData
-    });
-
+    formData.append('image', file);
+    const response = await fetch(API_UPLOAD_URL, { method: 'POST', body: formData });
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
-
-    // result.imageUrl = public URL dari Supabase Storage CDN
-    // Contoh: "https://xxxx.supabase.co/storage/v1/object/public/menu-images/menu_1234.jpeg"
     return result.imageUrl;
 }
 
-// --- Hapus file lama dari Storage (saat edit dengan foto baru) ---
 async function deleteOldImage(imageUrl) {
     if (!imageUrl) return;
-
-    // Ekstrak nama file dari URL
-    // "https://xxxx.supabase.co/storage/v1/object/public/menu-images/menu_1234.jpeg"
-    // → filePath = "menu_1234.jpeg"
     const parts = imageUrl.split('/menu-images/');
     if (parts.length !== 2) return;
-
-    const filePath = parts[1];
-
-    // Fire-and-forget: tidak perlu blok jika gagal
     try {
         await fetch(API_UPLOAD_URL, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filePath })
+            body: JSON.stringify({ filePath: parts[1] })
         });
     } catch (err) {
-        console.warn("Gagal hapus foto lama dari storage (non-critical):", err.message);
+        console.warn("Gagal hapus foto lama (non-critical):", err.message);
     }
 }
 
-// --- Form Submit (Tambah / Edit Menu) ---
 if (menuForm) {
     menuForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const id        = inputId.value;
+        const id = inputId.value;
         const fileInput = document.getElementById('menu-image');
-        const saveBtn   = document.getElementById('admin-save-btn');
-
-        // Ambil URL foto yang sudah ada (dari dataset saat mode edit)
-        // Jika mode tambah baru → null
+        const saveBtn = document.getElementById('admin-save-btn');
         let imageUrl = inputId.dataset.currentImage || null;
 
-        // Jika user memilih foto baru → upload dulu ke storage
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
-
             if (file.size > 2 * 1024 * 1024) {
                 showToast('Ukuran gambar maksimal 2MB!', true);
                 return;
             }
-
             try {
-                // Step 1: Feedback upload foto
                 saveBtn.textContent = 'Mengupload foto...';
-                saveBtn.disabled    = true;
-
-                // Step 2: Hapus foto lama dari storage jika ada (mode edit)
-                if (id && imageUrl) {
-                    await deleteOldImage(imageUrl);
-                }
-
-                // Step 3: Upload foto baru → dapat URL baru
+                saveBtn.disabled = true;
+                if (id && imageUrl) await deleteOldImage(imageUrl);
                 imageUrl = await uploadMenuImage(file);
-
             } catch (err) {
-                console.error("Upload Error:", err);
                 showToast('Gagal upload foto: ' + err.message, true);
                 saveBtn.textContent = 'Simpan';
-                saveBtn.disabled    = false;
-                return; // Hentikan jika upload gagal
+                saveBtn.disabled = false;
+                return;
             }
         }
 
-        // Susun payload untuk disimpan ke database
-        // image_url yang disimpan hanya URL pendek (bukan Base64)
         const payload = {
             category: inputCategory.value.trim(),
-            name:     inputName.value.trim(),
-            price:    parseInt(inputPrice.value)
+            name: inputName.value.trim(),
+            price: parseInt(inputPrice.value)
         };
-
-        // Hanya tambahkan image_url ke payload jika ada (tidak overwrite dengan null)
-        if (imageUrl) {
-            payload.image_url = imageUrl;
-        }
+        if (imageUrl) payload.image_url = imageUrl;
 
         try {
             saveBtn.textContent = 'Menyimpan...';
-            saveBtn.disabled    = true;
+            saveBtn.disabled = true;
 
-            const method   = id ? 'PUT' : 'POST';
-            const url      = id ? `${API_MENU_URL}/${id}` : API_MENU_URL;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_MENU_URL}/${id}` : API_MENU_URL;
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
-
             if (!result.success) throw new Error(result.message);
 
             showToast(id ? 'Menu berhasil diperbarui' : 'Menu berhasil ditambahkan');
             resetMenuForm();
             fileInput.value = '';
             fetchAdminMenu();
-
         } catch (err) {
-            console.error("Save Menu Error:", err);
             showToast('Gagal menyimpan menu: ' + err.message, true);
         } finally {
             saveBtn.textContent = 'Simpan';
-            saveBtn.disabled    = false;
+            saveBtn.disabled = false;
         }
     });
 }
 
-// --- Edit: isi form + simpan data foto lama ke dataset ---
 window.editMenu = function (id, category, name, price, imageUrl) {
     inputId.value = id;
-    inputId.dataset.currentImage = imageUrl || ''; // simpan URL foto lama
-
+    inputId.dataset.currentImage = imageUrl || '';
     inputCategory.value = category;
-    inputName.value     = name;
-    inputPrice.value    = price;
-
+    inputName.value = name;
+    inputPrice.value = price;
     if (btnCancel) btnCancel.style.display = 'block';
 
-    // Tampilkan preview foto yang sudah ada
     const previewEl = document.getElementById('current-image-preview');
     if (previewEl) {
         if (imageUrl) {
@@ -368,47 +630,44 @@ window.editMenu = function (id, category, name, price, imageUrl) {
                     <img src="${imageUrl}" alt="Foto saat ini"
                          style="height:50px; width:50px; border-radius:6px; object-fit:cover; border:1px solid var(--border);">
                     <small style="color:var(--text-muted); line-height:1.4;">
-                        Foto saat ini.<br>Pilih file baru untuk mengganti, atau kosongkan untuk mempertahankan.
+                        Foto saat ini.<br>Pilih file baru untuk mengganti.
                     </small>
                 </div>`;
         } else {
             previewEl.innerHTML = '';
         }
     }
-
-    // Scroll ke form agar terlihat
     menuForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-// --- Delete Menu (termasuk cleanup foto di Storage via backend) ---
 window.deleteMenu = async function (id) {
-    if (!confirm('Hapus menu ini? Foto produk juga akan dihapus dari storage.')) return;
+    const result = await showConfirm({
+        title: 'Hapus Menu?',
+        message: 'Menu dan foto produknya akan dihapus permanen dari sistem.',
+        variant: 'danger',
+        icon: '🗑️',
+        okLabel: 'Ya, Hapus'
+    });
+    if (!result.confirmed) return;
+
     try {
-        // Backend DELETE /api/menu/:id sudah otomatis hapus foto dari storage
         const response = await fetch(`${API_MENU_URL}/${id}`, { method: 'DELETE' });
-        const result   = await response.json();
-
-        if (!result.success) throw new Error(result.message);
-
+        const res = await response.json();
+        if (!res.success) throw new Error(res.message);
         showToast('Menu berhasil dihapus');
         fetchAdminMenu();
     } catch (err) {
-        console.error("Delete Menu Error:", err);
         showToast('Gagal menghapus menu', true);
     }
 };
 
-// --- Reset Form ---
 function resetMenuForm() {
-    if (inputId) {
-        inputId.value = '';
-        inputId.dataset.currentImage = ''; // bersihkan URL lama
-    }
+    if (inputId) inputId.value = '';
+    if (inputId) inputId.dataset.currentImage = '';
     if (inputCategory) inputCategory.value = '';
-    if (inputName)     inputName.value     = '';
-    if (inputPrice)    inputPrice.value    = '';
-    if (btnCancel)     btnCancel.style.display = 'none';
-
+    if (inputName) inputName.value = '';
+    if (inputPrice) inputPrice.value = '';
+    if (btnCancel) btnCancel.style.display = 'none';
     const previewEl = document.getElementById('current-image-preview');
     if (previewEl) previewEl.innerHTML = '';
 }
@@ -418,14 +677,13 @@ if (btnCancel) btnCancel.addEventListener('click', resetMenuForm);
 // ==========================================
 // USERS MANAGEMENT
 // ==========================================
-const userForm         = document.getElementById('admin-user-form');
-const inputUserName    = document.getElementById('admin-user-name');
+const userForm = document.getElementById('admin-user-form');
+const inputUserName = document.getElementById('admin-user-name');
 const inputUserPassword = document.getElementById('admin-user-password');
-const inputUserRole    = document.getElementById('admin-user-role');
-const userList         = document.getElementById('admin-user-list');
-const optionAdminRole  = document.getElementById('option-admin-role');
+const inputUserRole = document.getElementById('admin-user-role');
+const userList = document.getElementById('admin-user-list');
+const optionAdminRole = document.getElementById('option-admin-role');
 
-// Sembunyikan opsi role 'admin' jika yang login adalah admin (bukan owner)
 if (userSession.role_type === 'admin' && optionAdminRole) {
     optionAdminRole.style.display = 'none';
 }
@@ -434,11 +692,10 @@ async function fetchAdminUsers() {
     if (!userList) return;
     try {
         const response = await fetch(API_USERS_URL);
-        const result   = await response.json();
+        const result = await response.json();
         if (!result.success) throw new Error(result.message);
         renderAdminUsers(result.data);
     } catch (err) {
-        console.error("Fetch Users Error:", err);
         showToast('Gagal memuat daftar user', true);
     }
 }
@@ -472,12 +729,11 @@ if (userForm) {
     userForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const payload = {
-            username:       inputUserName.value,
-            password:       inputUserPassword.value,
-            role_type:      inputUserRole.value,
+            username: inputUserName.value,
+            password: inputUserPassword.value,
+            role_type: inputUserRole.value,
             requestor_role: userSession.role_type
         };
-
         try {
             const response = await fetch(API_USERS_URL, {
                 method: 'POST',
@@ -486,9 +742,8 @@ if (userForm) {
             });
             const result = await response.json();
             if (!result.success) throw new Error(result.message);
-
             showToast('User berhasil ditambahkan');
-            inputUserName.value     = '';
+            inputUserName.value = '';
             inputUserPassword.value = '';
             fetchAdminUsers();
         } catch (err) {
@@ -498,11 +753,19 @@ if (userForm) {
 }
 
 window.deleteUser = async function (id) {
-    if (!confirm('Yakin ingin menghapus user ini?')) return;
+    const result = await showConfirm({
+        title: 'Hapus User?',
+        message: 'User ini akan dihapus permanen dari sistem.',
+        variant: 'danger',
+        icon: '👤',
+        okLabel: 'Ya, Hapus User'
+    });
+    if (!result.confirmed) return;
+
     try {
         const response = await fetch(`${API_USERS_URL}/${id}?requestor_role=${userSession.role_type}`, { method: 'DELETE' });
-        const result   = await response.json();
-        if (!result.success) throw new Error(result.message);
+        const res = await response.json();
+        if (!res.success) throw new Error(res.message);
         showToast('User berhasil dihapus');
         fetchAdminUsers();
     } catch (err) {
@@ -532,7 +795,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 // ==========================================
-// INIT — Load data saat halaman pertama dibuka
+// INIT
 // ==========================================
 if (userSession.role_type !== 'kasir') {
     fetchAdminMenu();
