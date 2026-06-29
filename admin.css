@@ -171,7 +171,7 @@
 /* --- Summary Stats Bar --- */
 .tx-stats-bar {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 12px;
     margin-bottom: 16px;
 }
@@ -683,6 +683,11 @@
         gap: 8px;
     }
 
+    .tx-stats-bar .tx-stat-card:nth-child(4),
+    .tx-stats-bar .tx-stat-card:nth-child(5) {
+        grid-column: span 1;
+    }
+
     .tx-stat-card {
         padding: 12px;
     }
@@ -740,12 +745,24 @@
         gap: 8px;
     }
 
-    /* Stat card total omset: span 2 kolom */
+    /* Total omset: full width */
     .tx-stat-card:first-child {
         grid-column: 1 / -1;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+    }
+
+    /* Filter chips: stack on mobile */
+    .tx-payment-filter {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .pay-filter-btn {
+        flex: 1;
+        text-align: center;
+        padding: 8px 6px;
     }
 
     .tx-card-footer {
@@ -811,5 +828,104 @@
 
     .tx-admin-table tr:last-child td {
         border-bottom: none;
+    }
+}
+
+/* ============================================================
+   PAYMENT METHOD FILTER CHIPS
+   ============================================================ */
+.tx-payment-filter {
+    display: flex;
+    gap: 6px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+}
+
+.pay-filter-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.pay-filter-btn:hover {
+    background: var(--white);
+    color: var(--text);
+}
+
+.pay-filter-btn.active {
+    background: var(--white);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+
+.pay-filter-btn[data-method="tunai"].active {
+    color: #059669;
+}
+
+.pay-filter-btn[data-method="qris"].active {
+    color: #2563eb;
+}
+
+/* ============================================================
+   METHOD BADGE (di tabel desktop)
+   ============================================================ */
+.method-badge {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.method-tunai {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.method-qris {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* ============================================================
+   DESKTOP TABLE — IMPROVED
+   ============================================================ */
+@media (min-width: 1024px) {
+    .tx-items-cell {
+        font-size: 0.87rem;
+        line-height: 1.7;
+        min-width: 200px;
+    }
+
+    .tx-admin-table td {
+        padding: 16px 14px;
+        vertical-align: middle;
+    }
+
+    .tx-admin-table th {
+        padding: 13px 14px;
+    }
+
+    .tx-table-wrapper {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        border: 1.5px solid var(--border);
+        overflow: hidden;
+    }
+
+    .tx-stats-bar {
+        grid-template-columns: repeat(5, 1fr);
     }
 }

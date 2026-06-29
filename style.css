@@ -1301,3 +1301,59 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
+/* ============================================
+   PAYMENT AUTOCOMPLETE CHIPS
+   ============================================ */
+.payment-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.pay-chip {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 7px 10px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.pay-chip:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-glow);
+}
+
+.pay-chip.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+    box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
+}
+
+/* Label kecil di atas chips */
+.payment-chips::before {
+    content: 'Nominal cepat:';
+    width: 100%;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-family: var(--font);
+    margin-bottom: 2px;
+}

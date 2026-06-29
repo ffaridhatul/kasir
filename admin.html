@@ -184,6 +184,17 @@
                             <label for="admin-tx-date">Tanggal:</label>
                             <input type="date" id="admin-tx-date">
                         </div>
+                        <!-- Filter Metode Pembayaran -->
+                        <div class="tx-payment-filter" id="tx-payment-filter">
+                            <button class="pay-filter-btn active" data-method="all">Semua</button>
+                            <button class="pay-filter-btn" data-method="tunai">
+                                💵 Tunai
+                            </button>
+                            <button class="pay-filter-btn" data-method="qris">
+                                📱 QRIS
+                            </button>
+                        </div>
+
                         <button class="tx-btn tx-btn-complete" id="btn-refresh-tx" onclick="fetchAdminTransactions()"
                             style="gap: 6px; padding: 8px 14px; min-height: 36px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
@@ -201,6 +212,14 @@
                     <div class="tx-stat-card">
                         <span class="tx-stat-label">Total Omset</span>
                         <span class="tx-stat-value green" id="stat-total-omset">Rp 0</span>
+                    </div>
+                    <div class="tx-stat-card">
+                        <span class="tx-stat-label">💵 Tunai</span>
+                        <span class="tx-stat-value" id="stat-tunai">Rp 0</span>
+                    </div>
+                    <div class="tx-stat-card">
+                        <span class="tx-stat-label">📱 QRIS</span>
+                        <span class="tx-stat-value blue" id="stat-qris">Rp 0</span>
                     </div>
                     <div class="tx-stat-card">
                         <span class="tx-stat-label">Selesai</span>
@@ -235,12 +254,13 @@
                     <table class="tx-admin-table">
                         <thead>
                             <tr>
-                                <th>ID & Waktu</th>
-                                <th>Pelanggan / Catatan</th>
+                                <th style="width:110px;">ID & Waktu</th>
+                                <th style="width:160px;">Pelanggan / Catatan</th>
                                 <th>Pesanan</th>
-                                <th>Total & Bayar</th>
-                                <th>Status</th>
-                                <th style="text-align: center;">Aksi</th>
+                                <th style="width:80px;">Metode</th>
+                                <th style="width:130px;">Total</th>
+                                <th style="width:90px;">Status</th>
+                                <th style="text-align:center; width:140px;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="admin-tx-list"></tbody>

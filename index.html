@@ -180,10 +180,13 @@
                             <label for="payment-amount">Diterima</label>
                             <div class="input-prefix">
                                 <span>Rp</span>
-                                <input type="number" id="payment-amount" min="0" placeholder="0">
+                                <input type="number" id="payment-amount" min="0" placeholder="0" inputmode="numeric">
                             </div>
                         </div>
                     </div>
+
+                    <!-- PAYMENT AUTOCOMPLETE CHIPS -->
+                    <div id="payment-chips" class="payment-chips" style="display:none;"></div>
                     <div class="summary-row change-row" id="change-row">
                         <span>Kembalian</span>
                         <span id="change-amount" class="change-value">Rp 0</span>

@@ -185,6 +185,26 @@ if (txDateInput) {
     txDateInput.addEventListener('change', () => fetchAdminTransactions(txDateInput.value));
 }
 
+// ---- Payment Method Filter ----
+let activePaymentFilter = 'all';
+let allTxData = []; // cache raw data for client-side filtering
+
+document.querySelectorAll('.pay-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.pay-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activePaymentFilter = btn.dataset.method;
+        applyPaymentFilter();
+    });
+});
+
+function applyPaymentFilter() {
+    const filtered = activePaymentFilter === 'all'
+        ? allTxData
+        : allTxData.filter(tx => (tx.payment_method || 'tunai') === activePaymentFilter);
+    renderAdminTransactions(filtered);
+}
+
 async function fetchAdminTransactions(dateStr = txDateInput.value) {
     if (!txList && !txCardContainer) return;
 
@@ -201,7 +221,8 @@ async function fetchAdminTransactions(dateStr = txDateInput.value) {
         const result = await response.json();
 
         if (!result.success) throw new Error(result.message);
-        renderAdminTransactions(result.data);
+        allTxData = result.data;
+        applyPaymentFilter();
     } catch (err) {
         console.error("Fetch Transactions Error:", err);
         showToast('Gagal memuat transaksi', true);
@@ -218,12 +239,24 @@ function renderAdminTransactions(data) {
     let cntCompleted = 0;
     let cntPending = 0;
 
+    let totalTunai = 0;
+    let totalQris = 0;
+
     data.forEach(tx => {
-        if (tx.status === 'completed') { totalOmset += tx.total_price; cntCompleted++; }
+        if (tx.status === 'completed') {
+            totalOmset += tx.total_price;
+            cntCompleted++;
+            if ((tx.payment_method || 'tunai') === 'tunai') totalTunai += tx.total_price;
+            else if (tx.payment_method === 'qris') totalQris += tx.total_price;
+        }
         if (tx.status === 'pending') { cntPending++; }
     });
 
     if (statTotalOmset) statTotalOmset.textContent = `Rp ${totalOmset.toLocaleString('id-ID')}`;
+    const statTunai = document.getElementById('stat-tunai');
+    const statQris = document.getElementById('stat-qris');
+    if (statTunai) statTunai.textContent = `Rp ${totalTunai.toLocaleString('id-ID')}`;
+    if (statQris) statQris.textContent = `Rp ${totalQris.toLocaleString('id-ID')}`;
     if (statCompleted) statCompleted.textContent = `${cntCompleted} pesanan`;
     if (statPending) statPending.textContent = `${cntPending} pesanan`;
 
@@ -381,22 +414,23 @@ function renderTxTable(data) {
         const cancelReasonHtml = (tx.status === 'canceled' && tx.cancel_reason)
             ? `<div style="font-size:0.73rem; color:var(--red); margin-top:4px;">Alasan: ${tx.cancel_reason}</div>` : '';
 
-        const payMethodBadge = tx.payment_method ? `<div style="margin-top:4px;"><span style="font-size:0.7rem; background:var(--surface); padding:2px 6px; border-radius:4px; border:1px solid var(--border); color:var(--text-muted);">${tx.payment_method.toUpperCase()}</span></div>` : ''; // Added
+        const method = tx.payment_method || 'tunai';
+        const methodBadge = `<span class="method-badge method-${method}">${method === 'qris' ? '📱 QRIS' : '💵 Tunai'}</span>`;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>
-                <b>#${tx.id}</b><br>
+                <b style="font-size:0.9rem;">#${tx.id}</b><br>
                 <span style="font-size:0.78rem; color:var(--text-muted);">${timeStr}</span><br>
                 <span style="font-size:0.73rem; color:var(--text-light);">Oleh: ${tx.cashier_name || '-'}</span>
             </td>
             <td>${customerInfo}${notesHtml}</td>
-            <td style="font-size:0.82rem;">${itemsHtml}</td>
+            <td class="tx-items-cell">${itemsHtml}</td>
+            <td>${methodBadge}</td>
             <td>
-                <span style="font-weight:700; ${tx.status === 'canceled' ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">
+                <span style="font-weight:700; font-size:0.95rem; ${tx.status === 'canceled' ? 'text-decoration:line-through; color:var(--text-muted);' : 'color:var(--red);'}">
                     Rp ${tx.total_price.toLocaleString('id-ID')}
                 </span>
-                ${payMethodBadge}
             </td>
             <td>${statusBadge}${cancelReasonHtml}</td>
             <td style="text-align:center;">${actionButtons}</td>

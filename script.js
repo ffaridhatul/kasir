@@ -254,6 +254,7 @@ function renderCart() {
     totalPriceEl.textContent = `Rp ${total.toLocaleString('id-ID')}`;
     itemCountEl.textContent = `${totalItems} item`;
     calculateChange();
+    renderPaymentChips();
 }
 
 // ---- Change Calculation ----
@@ -279,6 +280,82 @@ function calculateChange() {
 }
 
 paymentInput.addEventListener('input', calculateChange);
+
+// ---- Payment Chips (Autocomplete Nominal) ----
+const PECAHAN = [500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
+const paymentChipsEl = document.getElementById('payment-chips');
+
+function getPaymentSuggestions(total) {
+    if (!total || total <= 0) return [];
+
+    const suggestions = [];
+
+    // 1. Uang pas
+    if (total % 500 === 0) {
+        suggestions.push({ label: 'Uang Pas', value: total });
+    }
+
+    // 2. Nominal "bulat terdekat" — kelipatan 5rb pertama di atas total
+    const nearest = Math.ceil(total / 5000) * 5000;
+    if (nearest > total) {
+        suggestions.push({ label: `Rp ${nearest.toLocaleString('id-ID')}`, value: nearest });
+    }
+
+    // 3. Selalu tawarkan 50rb dan 100rb jika belum masuk dan lebih besar dari total
+    for (const anchor of [50000, 100000]) {
+        if (anchor > total && !suggestions.find(s => s.value === anchor)) {
+            suggestions.push({ label: `Rp ${anchor.toLocaleString('id-ID')}`, value: anchor });
+        }
+    }
+
+    // 4. Jika slot masih ada, isi dengan kelipatan 5rb berikutnya setelah nearest
+    const allRound = [];
+    for (let v = 5000; v <= 200000; v += 5000) allRound.push(v);
+    for (const v of allRound) {
+        if (suggestions.length >= 4) break;
+        if (v > total && !suggestions.find(s => s.value === v)) {
+            suggestions.push({ label: `Rp ${v.toLocaleString('id-ID')}`, value: v });
+        }
+    }
+
+    // Urutkan ascending by value, uang pas tetap di depan
+    const uangPas = suggestions.find(s => s.label === 'Uang Pas');
+    const rest = suggestions.filter(s => s.label !== 'Uang Pas').sort((a, b) => a.value - b.value);
+    return (uangPas ? [uangPas, ...rest] : rest).slice(0, 4);
+}
+
+function renderPaymentChips() {
+    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+    if (!paymentChipsEl || total <= 0) {
+        if (paymentChipsEl) paymentChipsEl.style.display = 'none';
+        return;
+    }
+
+    const suggestions = getPaymentSuggestions(total);
+    if (!suggestions.length) {
+        paymentChipsEl.style.display = 'none';
+        return;
+    }
+
+    paymentChipsEl.innerHTML = suggestions.map(s => `
+        <button type="button" class="pay-chip ${parseFloat(paymentInput.value) === s.value ? 'active' : ''}"
+            data-value="${s.value}">
+            ${s.label}
+        </button>
+    `).join('');
+
+    paymentChipsEl.style.display = 'flex';
+
+    paymentChipsEl.querySelectorAll('.pay-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            paymentInput.value = btn.dataset.value;
+            calculateChange();
+            renderPaymentChips(); // refresh active state
+        });
+    });
+}
+
 
 // ---- Process Order ----
 async function processOrder() {
