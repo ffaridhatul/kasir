@@ -1,12 +1,6 @@
 /* ============================================
    Kebab Chicken Lava — POS Script
    ============================================ */
-// ---- State ----
-let menuItems = [];
-let cart = [];
-let activeCategory = 'all';
-let searchQuery = '';
-let editModeId = null; // Track if editing a transaction
 
 // Check user session
 const userSession = JSON.parse(localStorage.getItem('kebab_user_session'));
@@ -24,6 +18,7 @@ let menuItems = [];
 let cart = [];
 let activeCategory = 'all';
 let searchQuery = '';
+let editModeId = null; // Track if editing a transaction
 
 // Emoji map per category (fallback jika tidak ada gambar)
 const CATEGORY_EMOJI = {
