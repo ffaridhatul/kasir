@@ -1,6 +1,12 @@
 /* ============================================
    Kebab Chicken Lava — POS Script
    ============================================ */
+// ---- State ----
+let menuItems = [];
+let cart = [];
+let activeCategory = 'all';
+let searchQuery = '';
+let editModeId = null; // Track if editing a transaction
 
 // Check user session
 const userSession = JSON.parse(localStorage.getItem('kebab_user_session'));
@@ -80,6 +86,7 @@ async function fetchMenu() {
         menuItems = result.data;
         buildCategoryTabs();
         renderMenu();
+        checkEditMode(); // Check if there is data to edit
     } catch (err) {
         console.error('Gagal mengambil menu:', err);
         menuContainer.innerHTML = `
@@ -356,6 +363,30 @@ function renderPaymentChips() {
     });
 }
 
+// Check and populate data if in edit mode
+function checkEditMode() {
+    const editData = JSON.parse(localStorage.getItem('edit_transaction_data'));
+    if (editData) {
+        editModeId = editData.id;
+        cart = typeof editData.items === 'string' ? JSON.parse(editData.items) : editData.items;
+
+        if (document.getElementById('customer-name')) document.getElementById('customer-name').value = editData.customer_name || '';
+        if (document.getElementById('transaction-notes')) document.getElementById('transaction-notes').value = editData.notes || '';
+        if (document.getElementById('payment-method')) document.getElementById('payment-method').value = editData.payment_method || 'tunai';
+        if (document.getElementById('payment-amount')) document.getElementById('payment-amount').value = editData.amount_paid || 0;
+
+        if (processBtn) {
+            processBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Simpan Perubahan`;
+        }
+        renderCart();
+        updateCartBadge(false);
+        renderMenu();
+    }
+}
 
 // ---- Process Order ----
 async function processOrder() {
@@ -389,8 +420,12 @@ async function processOrder() {
             </svg>
             Memproses...`;
 
-        const response = await fetch(BACKEND_URL, {
-            method: 'POST',
+        // Adjust URL and method for edit mode
+        const url = editModeId ? `${API_TX_URL}/${editModeId}` : BACKEND_URL;
+        const method = editModeId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
         });
@@ -404,8 +439,18 @@ async function processOrder() {
             renderCart();
             updateCartBadge(false);
             renderMenu();
-            showToast('Transaksi berhasil diproses!');
-            closeMobileCart();
+
+            if (editModeId) {
+                localStorage.removeItem('edit_transaction_data');
+                editModeId = null;
+                showToast('Transaksi berhasil diperbarui!');
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1000);
+            } else {
+                showToast('Transaksi berhasil diproses!');
+                closeMobileCart();
+            }
         } else {
             showToast('Gagal memproses transaksi.', true);
         }
@@ -418,7 +463,7 @@ async function processOrder() {
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
-            Proses Pesanan`;
+            ${editModeId ? 'Simpan Perubahan' : 'Proses Pesanan'}`;
         calculateChange();
     }
 }

@@ -183,6 +183,32 @@ app.put("/api/transactions/:id/status", async (req, res) => {
     }
 });
 
+// Add this new endpoint to handle full transaction edit
+app.put("/api/transactions/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { items, total_price, payment_amount, change_amount, customer_name, notes, payment_method } = req.body;
+
+        const updateData = {
+            items: items,
+            total_price: total_price,
+            amount_paid: payment_amount,
+            change_amount: change_amount,
+            customer_name: customer_name,
+            notes: notes,
+            payment_method: payment_method || 'tunai'
+        };
+
+        const { error } = await supabase.from('transactions').update(updateData).eq('id', id);
+
+        if (error) throw error;
+        return res.status(200).json({ success: true, message: "Transaction updated successfully" });
+    } catch (error) {
+        console.error("[ERROR LOG] " + new Date().toISOString() + " : " + error.message);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ==========================================
 // MENU ENDPOINT
 // ==========================================

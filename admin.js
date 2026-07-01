@@ -318,6 +318,11 @@ function renderTxCards(data) {
         let actionsHtml = '';
         if (tx.status === 'pending') {
             actionsHtml = `
+                <button class="tx-btn"
+                    onclick="editTransaction(${tx.id})"
+                    style="background:var(--surface); border:1.5px solid var(--border); color:var(--text);">
+                    ✏️ Edit
+                </button>
                 <button class="tx-btn tx-btn-complete"
                     onclick="updateTxStatus(${tx.id}, 'completed', event)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
@@ -368,7 +373,6 @@ function renderTxCards(data) {
     });
 }
 
-// ---- Render Tabel (Desktop ≥1024px) ----
 function renderTxTable(data) {
     if (!txList) return;
     txList.innerHTML = '';
@@ -393,6 +397,10 @@ function renderTxTable(data) {
         if (tx.status === 'pending') {
             actionButtons = `
                 <div style="display:flex; gap:6px; justify-content:center;">
+                    <button onclick="editTransaction(${tx.id})"
+                        class="tx-btn" style="padding:6px 12px; font-size:0.78rem; min-height:32px; background:var(--surface); border:1.5px solid var(--border); color:var(--text);">
+                        ✏️ Edit
+                    </button>
                     <button onclick="updateTxStatus(${tx.id}, 'completed', event)"
                         class="tx-btn tx-btn-complete" style="padding:6px 12px; font-size:0.78rem; min-height:32px;">
                         ✓ Selesai
@@ -438,6 +446,15 @@ function renderTxTable(data) {
         txList.appendChild(tr);
     });
 }
+
+// Redirect and pass data to index.html
+window.editTransaction = function (id) {
+    const tx = allTxData.find(t => t.id === id);
+    if (tx) {
+        localStorage.setItem('edit_transaction_data', JSON.stringify(tx));
+        window.location.href = 'index.html';
+    }
+};
 
 // ---- Update Status Pesanan ----
 window.updateTxStatus = async function (id, status, event) {
