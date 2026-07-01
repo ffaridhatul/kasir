@@ -320,7 +320,7 @@ function renderTxCards(data) {
             actionsHtml = `
                 <button class="tx-btn"
                     onclick="editTransaction(${tx.id})"
-                    style="background:var(--surface); border:1.5px solid var(--border); color:var(--text);">
+                    style="background:var(--surface); border:1.5px solid var(--border); color:var(--text); display: none;">
                     ✏️ Edit
                 </button>
                 <button class="tx-btn tx-btn-complete"
@@ -398,7 +398,7 @@ function renderTxTable(data) {
             actionButtons = `
                 <div style="display:flex; gap:6px; justify-content:center;">
                     <button onclick="editTransaction(${tx.id})"
-                        class="tx-btn" style="padding:6px 12px; font-size:0.78rem; min-height:32px; background:var(--surface); border:1.5px solid var(--border); color:var(--text);">
+                        class="tx-btn" style="padding:6px 12px; font-size:0.78rem; min-height:32px; background:var(--surface); border:1.5px solid var(--border); color:var(--text); display: none;">
                         ✏️ Edit
                     </button>
                     <button onclick="updateTxStatus(${tx.id}, 'completed', event)"

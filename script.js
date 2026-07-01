@@ -64,6 +64,7 @@ const cartToggleBtn = document.getElementById('cart-toggle-btn');
 const closeCartBtn = document.getElementById('close-cart-btn');
 const toast = document.getElementById('toast');
 const adminLinkBtn = document.querySelector('a[href="admin.html"]');
+const cancelEditBtn = document.getElementById('cancel-edit-btn'); // Add this line
 
 
 // if (userSession.role_type === 'kasir' && adminLinkBtn) {
@@ -377,6 +378,42 @@ function checkEditMode() {
                 </svg>
                 Simpan Perubahan`;
         }
+
+        // Show cancel button
+        // Cancel Edit Event
+        if (cancelEditBtn) {
+            cancelEditBtn.addEventListener('click', () => {
+                // Clear local storage and state
+                localStorage.removeItem('edit_transaction_data');
+                editModeId = null;
+
+                // Reset cart and form
+                cart = [];
+                paymentInput.value = '';
+                const customerNameEl = document.getElementById('customer-name');
+                const notesEl = document.getElementById('transaction-notes');
+                const paymentMethodSelect = document.getElementById('payment-method');
+
+                if (customerNameEl) customerNameEl.value = '';
+                if (notesEl) notesEl.value = '';
+                if (paymentMethodSelect) paymentMethodSelect.value = 'tunai';
+
+                // Reset UI buttons
+                processBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            Proses Pesanan`;
+                cancelEditBtn.style.display = 'none';
+
+                // Re-render
+                renderCart();
+                updateCartBadge(false);
+                renderMenu();
+                showToast('Edit pesanan dibatalkan');
+            });
+        }
+
         renderCart();
         updateCartBadge(false);
         renderMenu();
@@ -431,6 +468,9 @@ async function processOrder() {
             if (customerNameEl) customerNameEl.value = '';
             if (notesEl) notesEl.value = '';
             if (paymentMethodSelect) paymentMethodSelect.value = 'tunai'; // Reset dropdown
+
+            if (cancelEditBtn) cancelEditBtn.style.display = 'none'; // Hide cancel button after success
+
             renderCart();
             updateCartBadge(false);
             renderMenu();
@@ -446,7 +486,8 @@ async function processOrder() {
                 showToast('Transaksi berhasil diproses!');
                 closeMobileCart();
             }
-        } else {
+        }
+        else {
             showToast('Gagal memproses transaksi.', true);
         }
     } catch (err) {
